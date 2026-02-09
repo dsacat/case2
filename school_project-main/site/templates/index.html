@@ -1,0 +1,86 @@
+{% extends 'layout.html' %}
+{% block content %}
+<section class="hero-panel anim-fade-in anim-delay-2">
+    <div>
+        <h1>Школьная столовая {{ Name_sch }}</h1>
+        <p>Цифровой сервис питания: меню, заказы, отчётность, закупки и обратная связь в одном интерфейсе.</p>
+    </div>
+    {% if User %}
+    <div class="hero-stats">
+        <div class="hero-chip">{{ role_label(User.role) }}</div>
+        <div class="hero-chip">Баланс: {{ User.balance }} ₽</div>
+        <div class="hero-chip">ID: {{ User.id }}</div>
+    </div>
+    {% endif %}
+</section>
+
+{% if can_create_dish %}
+<div class="top-actions anim-fade-in anim-delay-3">
+    <a href="/create_dish/" class="button-custom">+ Добавить блюдо</a>
+    <a href="/create_menu_group/" class="button-custom">+ Добавить группу</a>
+</div>
+{% endif %}
+
+<section class="panel menu-panel anim-fade-in anim-delay-4">
+    <h2>Меню столовой</h2>
+    {% if menu_groups %}
+    <div class="menu-groups">
+        {% for group in menu_groups %}
+        <section class="menu-group-card anim-fade-in anim-delay-{{ (loop.index0 % 6) + 1 }}">
+            <div class="menu-group-head">
+                <h3>{{ group.title }}</h3>
+                <span class="menu-group-count">{{ group.dishes|length }}</span>
+            </div>
+            {% if group.description %}
+            <p class="menu-group-desc">{{ group.description }}</p>
+            {% endif %}
+            <div class="menu-group-preview">
+                {% for dish in group.dishes[:3] %}
+                <a href="/dish/{{ dish.id }}/" class="menu-group-preview-item">
+                    <span>{{ dish.title }}</span>
+                    <span>{{ dish.price }} ₽</span>
+                </a>
+                {% endfor %}
+                {% if group.dishes|length > 3 %}
+                <div class="menu-group-more">И ещё {{ group.dishes|length - 3 }} поз.</div>
+                {% endif %}
+            </div>
+            <a href="{{ url_for('menu_group_page', group_key=group.key) }}" class="button-custom menu-group-open">Открыть группу</a>
+        </section>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-card anim-fade-in anim-delay-2">Пока нет блюд. Добавьте первое блюдо через панель администратора.</div>
+    {% endif %}
+</section>
+
+{% if User and orders_preview %}
+<section class="panel anim-fade-in anim-delay-5">
+    <h3>Последние заказы</h3>
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>Блюдо</th>
+                <th>Статус</th>
+                <th>Цена</th>
+                <th>Время</th>
+                <th>Действие</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for row in orders_preview %}
+            <tr>
+                <td>{{ row.dish }}</td>
+                <td>{{ row.status }}</td>
+                <td>{{ row.price }} ₽</td>
+                <td>{{ row.created }}</td>
+                <td><a href="/dish/{{ row.dish_id }}/" class="button-custom">Заказать снова</a></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

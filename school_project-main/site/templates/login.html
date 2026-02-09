@@ -1,0 +1,22 @@
+{% extends 'layout.html' %}
+{% block content %}
+<section class="form-shell anim-fade-in anim-delay-2">
+    <form class="form-card" method="POST" action="">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <h1>Вход</h1>
+        <div class="field">
+            <label>Email</label>
+            <input class="input-styled" type="email" name="email" required>
+        </div>
+        <div class="field">
+            <label>Пароль</label>
+            <input class="input-styled" type="password" name="password" required>
+        </div>
+        <button class="button-custom" type="submit">Войти</button>
+        <p class="hint-line">После проверки пароля вход подтверждается ссылкой из email.</p>
+        {% if mes %}<p class="mes-line">{{ mes }}</p>{% endif %}
+        <p class="hint-line"><a href="/password/restore/">Забыли пароль?</a></p>
+        <p class="hint-line">Нет аккаунта? <a href="/reg/new/">Зарегистрироваться</a></p>
+    </form>
+</section>
+{% endblock %}

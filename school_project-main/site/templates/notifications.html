@@ -1,0 +1,40 @@
+{% extends 'layout.html' %}
+{% block content %}
+<section class="panel anim-fade-in anim-delay-2">
+    <div class="notify-toolbar">
+        <h2>Уведомления</h2>
+        <div class="notify-toolbar-actions">
+            <form class="notify-filter" method="GET" action="/notifications/">
+                <select class="input-styled" name="state">
+                    <option value="all" {% if filter_state == 'all' %}selected{% endif %}>Все</option>
+                    <option value="unread" {% if filter_state == 'unread' %}selected{% endif %}>Непрочитанные</option>
+                    <option value="read" {% if filter_state == 'read' %}selected{% endif %}>Прочитанные</option>
+                </select>
+                <select class="input-styled" name="category">
+                    {% for key, title in notification_categories.items() %}
+                    <option value="{{ key }}" {% if filter_category == key %}selected{% endif %}>{{ title }}</option>
+                    {% endfor %}
+                </select>
+                <button class="button-custom mini" type="submit">Применить</button>
+            </form>
+            <a class="button-custom mini" href="/notifications/?mark=all">Отметить всё прочитанным</a>
+        </div>
+    </div>
+    <div class="notify-list">
+        {% for row in notifications %}
+        <article class="notify-item {% if not row.is_read %}notify-new{% endif %}">
+            <div class="notify-body">
+                <h4>{{ row.title }}</h4>
+                <p>{{ row.body }}</p>
+            </div>
+            <div class="notify-meta">
+                <span>{{ row.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                {% if row.link %}<a class="button-custom mini" href="{{ row.link }}">Открыть</a>{% endif %}
+            </div>
+        </article>
+        {% else %}
+        <p>Уведомлений нет.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

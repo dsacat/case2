@@ -1,0 +1,7 @@
+Flask
+Flask-Mail
+Flask-SQLAlchemy
+SQLAlchemy
+Werkzeug
+Pillow
+pillow-avif-plugin

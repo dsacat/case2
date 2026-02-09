@@ -1,0 +1,32 @@
+{% extends 'layout.html' %}
+{% block content %}
+<section class="feedback-grid anim-fade-in anim-delay-2">
+    <form class="panel form-block" method="POST" action="">
+        <h2>Новое обращение</h2>
+        <div class="field"><label>Тема</label><input class="input-styled" type="text" name="subject" required></div>
+        <div class="field"><label>Сообщение</label><textarea class="input-styled" name="body" required></textarea></div>
+        <button class="button-custom" type="submit">Отправить</button>
+    </form>
+    <div class="panel">
+        <h3>{% if is_moder %}Все обращения{% else %}Мои обращения{% endif %}</h3>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>ID</th><th>Тема</th><th>Статус</th><th>Обновлено</th><th></th></tr></thead>
+                <tbody>
+                {% for row in threads %}
+                <tr>
+                    <td>{{ row.id }}</td>
+                    <td>{{ row.subject }}</td>
+                    <td>{{ row.status }}</td>
+                    <td>{{ row.updated_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                    <td><a class="button-custom mini" href="/feedback/{{ row.id }}/">Открыть</a></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5">Обращений пока нет.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

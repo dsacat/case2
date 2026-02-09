@@ -1,0 +1,218 @@
+{% extends 'layout.html' %}
+{% block head %}
+<script defer src="{{ url_for('static', filename='js/profile.js', v=runtime_assets_rev) }}"></script>
+{% endblock %}
+{% block content %}
+<section class="profile-grid anim-fade-in anim-delay-2">
+    <div class="panel profile-avatar-panel">
+        <h2>Профиль</h2>
+        <div class="avatar-container" id="profile-img2" onclick="document.getElementById('avatar-upload').click();">
+            {% if not User.icon %}
+            <img id="profile-img" class="def_ava2 profile-avatar" src="{{ url_for('static', filename='icons/default_icon.avif') }}" data-theme-icon="1" data-light="{{ url_for('static', filename='icons/default_icon.avif') }}" data-dark="{{ url_for('static', filename='icons/default_icon_dark.avif') }}" alt="Аватар">
+            {% else %}
+            <img id="profile-img" class="def_ava2 profile-avatar" src="{{ url_for('static', filename='icons/' + user_id + '.avif') }}" alt="Аватар">
+            {% endif %}
+            <div class="avatar-overlay">
+                <span class="avatar-overlay-inner">
+                    <svg class="avatar-pencil" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M3 17.25V21h3.75L19.81 7.94l-3.75-3.75L3 17.25zm2.92 2.33H5v-.92l11.06-11.06.92.92L5.92 19.58zM20.71 6.04a1.003 1.003 0 000-1.42l-1.34-1.34a1.003 1.003 0 00-1.42 0l-.95.95 2.76 2.76.95-.95z"/>
+                    </svg>
+                    <span>Изменить</span>
+                </span>
+            </div>
+            <input id="avatar-upload" type="file" accept="image/*" style="display:none;">
+        </div>
+        <div class="chip-row">
+            <span class="hero-chip">Роль: {{ role_label(User.role) }}</span>
+            <span class="hero-chip">Баланс: {{ User.balance }} ₽</span>
+            {% if is_parent %}<span class="hero-chip">Семья: {{ linked_children|length }} детей</span>{% endif %}
+        </div>
+    </div>
+
+    <form class="panel form-block" method="POST" action="">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="action" value="save_profile">
+        <h3>Личные данные</h3>
+        <div class="field-grid">
+            <div class="field"><label>Имя</label><input class="input-styled" type="text" name="user_name" value="{{ User.name }}" required></div>
+            <div class="field"><label>Фамилия</label><input class="input-styled" type="text" name="user_surname" value="{{ User.surname }}" required></div>
+        </div>
+        <div class="field"><label>Отчество</label><input class="input-styled" type="text" name="user_patronymic" value="{{ User.otchestvo }}"></div>
+        <div class="field"><label>Аллергии</label><textarea class="input-styled" name="allergies">{{ allergies }}</textarea></div>
+        <div class="field"><label>Предпочтения в питании</label><textarea class="input-styled" name="preferences">{{ preferences }}</textarea></div>
+        <div class="field">
+            <label>Настройка уведомлений</label>
+            <div class="prefs-grid">
+                <label class="checkbox-line"><input type="checkbox" name="notify_orders" {% if notify_prefs.orders %}checked{% endif %}><span>Заказы</span></label>
+                <label class="checkbox-line"><input type="checkbox" name="notify_payments" {% if notify_prefs.payments %}checked{% endif %}><span>Оплата</span></label>
+                <label class="checkbox-line"><input type="checkbox" name="notify_feedback" {% if notify_prefs.feedback %}checked{% endif %}><span>Обратная связь</span></label>
+                <label class="checkbox-line"><input type="checkbox" name="notify_kitchen" {% if notify_prefs.kitchen %}checked{% endif %}><span>Кухня</span></label>
+                <label class="checkbox-line"><input type="checkbox" name="notify_system" {% if notify_prefs.system %}checked{% endif %}><span>Системные</span></label>
+                <label class="checkbox-line"><input type="checkbox" name="email_notifications" {% if email_notifications %}checked{% endif %}><span>Email уведомления</span></label>
+            </div>
+        </div>
+        <button class="button-custom" type="submit">Сохранить</button>
+    </form>
+</section>
+
+{% if is_student %}
+<section class="panel anim-fade-in anim-delay-3">
+    <h3>Связка с родителем</h3>
+    <div class="field-grid">
+        <form class="panel form-block" method="POST" action="">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="hidden" name="action" value="create_family_invite">
+            <div class="field">
+                <label>Срок действия кода, часов</label>
+                <input class="input-styled" type="number" name="ttl_hours" min="1" max="168" value="72">
+            </div>
+            <button class="button-custom" type="submit">Создать код и ссылку</button>
+        </form>
+        <div class="panel form-block">
+            <h4>Привязанные родители</h4>
+            <div class="chip-row">
+                {% for parent in linked_parents %}
+                <span class="hero-chip">{{ parent.name }}</span>
+                {% else %}
+                <span>Пока нет привязанных родителей.</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr><th>Код</th><th>Ссылка</th><th>Действует до</th></tr>
+            </thead>
+            <tbody>
+            {% for invite in family_invites %}
+            <tr>
+                <td><strong>{{ invite.code }}</strong></td>
+                <td><a href="{{ invite.link }}">{{ invite.link }}</a></td>
+                <td>{{ invite.expires }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3">Активных кодов нет.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endif %}
+
+{% if is_parent %}
+<section class="panel anim-fade-in anim-delay-3">
+    <h3>Привязка ребенка</h3>
+    <form class="inline-actions" method="POST" action="">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="action" value="link_child_by_code">
+        <input class="input-styled" type="text" name="invite_code" maxlength="24" placeholder="Код от школьника" required>
+        <button class="button-custom" type="submit">Привязать по коду</button>
+    </form>
+    <div class="chip-row">
+        <span class="hero-chip">Расходы за 30 дней: {{ family_total_spent_30 }} ₽</span>
+        <span class="hero-chip">Общие расходы: {{ family_total_spent_all }} ₽</span>
+    </div>
+</section>
+
+<section class="panel anim-fade-in anim-delay-4">
+    <h3>Дети и ограничения</h3>
+    <div class="cards-grid">
+        {% for child in linked_children %}
+        <article class="stats-card">
+            <h4>{{ child.name }}</h4>
+            <p>Сегодня: {{ child.spent_today }} ₽ | 30 дней: {{ child.spent_30 }} ₽ | Всего: {{ child.spent_all }} ₽</p>
+            <form class="form-block" method="POST" action="">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="action" value="update_child_rules">
+                <input type="hidden" name="child_id" value="{{ child.id }}">
+                <label class="checkbox-line"><input type="checkbox" name="link_active" {% if child.is_active %}checked{% endif %}><span>Связка активна</span></label>
+                <div class="field">
+                    <label>Лимит в день (₽)</label>
+                    <input class="input-styled" type="number" name="daily_limit" min="0" max="50000" value="{{ child.daily_limit }}">
+                </div>
+                <div class="field">
+                    <label>Разрешенные продукты (через запятую)</label>
+                    <input class="input-styled" type="text" name="allowed_products" value="{{ child.allowed_products }}">
+                </div>
+                <div class="field">
+                    <label>Обязательные продукты (через запятую)</label>
+                    <input class="input-styled" type="text" name="required_products" value="{{ child.required_products }}">
+                </div>
+                <div class="field">
+                    <label>Запрещенные продукты (через запятую)</label>
+                    <input class="input-styled" type="text" name="forbidden_products" value="{{ child.forbidden_products }}">
+                </div>
+                <button class="button-custom" type="submit">Сохранить ограничения</button>
+            </form>
+            <form method="POST" action="" style="margin-top:10px;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="action" value="unlink_child">
+                <input type="hidden" name="child_id" value="{{ child.id }}">
+                <button class="button-custom danger" type="submit">Отвязать ребенка</button>
+            </form>
+        </article>
+        {% else %}
+        <div class="empty-card">Нет привязанных детей. Введите код, который создал школьник.</div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<section class="panel anim-fade-in anim-delay-4">
+    <div class="top-actions">
+        <a class="button-custom" href="/pay/">Пополнить баланс</a>
+        <a class="button-custom" href="/orders/">Заказы</a>
+        <a class="button-custom" href="/reports/">Отчетность</a>
+        <a class="button-custom" href="/feedback/">Обратная связь</a>
+        {% if can_open_kitchen %}<a class="button-custom" href="/kitchen/">Кухня</a>{% endif %}
+        {% if can_open_settings %}<a class="button-custom" href="/settings/">Настройки проекта</a>{% endif %}
+        {% if can_open_admin_console %}<a class="button-custom" href="/admin_console/">Админ консоль</a>{% endif %}
+        <a class="button-custom danger" href="/del_ava/">Удалить аватар</a>
+        <a class="button-custom danger" href="/del_account/">Удалить аккаунт</a>
+    </div>
+</section>
+
+<section class="panel anim-fade-in anim-delay-5">
+    <h3>{% if is_parent %}Заказы детей{% else %}Мои заказы{% endif %}</h3>
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>Дата питания</th>
+                <th>Оформлен</th>
+                {% if is_parent %}<th>Ребенок</th>{% endif %}
+                <th>Блюдо</th>
+                <th>Статус</th>
+                <th>Цена</th>
+                <th>Действие</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for row in orders_view %}
+            <tr>
+                <td>{{ row.meal_date }}</td>
+                <td>{{ row.date }}</td>
+                {% if is_parent %}<td>{{ row.child }}</td>{% endif %}
+                <td>{{ row.dish }}</td>
+                <td>{{ row.status }}</td>
+                <td>{{ row.price }} ₽</td>
+                <td>
+                    {% if row.can_received %}
+                    <form method="POST" action="/order/{{ row.id }}/received/">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <button class="button-custom mini" type="submit">Отметить получение</button>
+                    </form>
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="{{ 7 if is_parent else 6 }}">Заказов пока нет.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

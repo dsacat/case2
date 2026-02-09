@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>{{ title }}</title>
+    {% set favicon_url = url_for('favicon', v=runtime_assets_rev) %}
+    {% set favicon_png_url = url_for('favicon_png', v=runtime_assets_rev) %}
+    <link rel="icon" href="{{ favicon_url }}">
+    <link rel="icon" type="image/x-icon" sizes="any" href="{{ favicon_url }}">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ favicon_url }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ favicon_png_url }}">
+    <link rel="apple-touch-icon" href="{{ favicon_png_url }}">
+    <script>
+        (function () {
+            const icoHref = "{{ favicon_url }}";
+            const pngHref = "{{ favicon_png_url }}";
+
+            const ensureFavicon = function () {
+                const head = document.head || document.getElementsByTagName('head')[0];
+                if (!head) return;
+
+                const ensure = function (selector, attrs) {
+                    let node = head.querySelector(selector);
+                    if (!node) {
+                        node = document.createElement('link');
+                        head.appendChild(node);
+                    }
+                    Object.keys(attrs).forEach((key) => node.setAttribute(key, attrs[key]));
+                };
+
+                ensure('link[rel=\"icon\"][data-favicon=\"base\"]', {
+                    rel: 'icon',
+                    href: icoHref,
+                    'data-favicon': 'base'
+                });
+                ensure('link[rel=\"icon\"][type=\"image/x-icon\"][data-favicon=\"ico\"]', {
+                    rel: 'icon',
+                    type: 'image/x-icon',
+                    href: icoHref,
+                    sizes: 'any',
+                    'data-favicon': 'ico'
+                });
+                ensure('link[rel=\"shortcut icon\"][data-favicon=\"shortcut\"]', {
+                    rel: 'shortcut icon',
+                    type: 'image/x-icon',
+                    href: icoHref,
+                    'data-favicon': 'shortcut'
+                });
+                ensure('link[rel=\"icon\"][type=\"image/png\"][data-favicon=\"png\"]', {
+                    rel: 'icon',
+                    type: 'image/png',
+                    sizes: '16x16',
+                    href: pngHref,
+                    'data-favicon': 'png'
+                });
+            };
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', ensureFavicon, { once: true });
+            } else {
+                ensureFavicon();
+            }
+            window.addEventListener('pageshow', ensureFavicon);
+        })();
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v=runtime_assets_rev) }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css', v=runtime_assets_rev) }}">
+    <script defer src="{{ url_for('static', filename='js/script.js', v=runtime_assets_rev) }}"></script>
+    <script defer src="{{ url_for('static', filename='js/theme.js', v=runtime_assets_rev) }}"></script>
+    {% if User %}
+    <script defer src="{{ url_for('static', filename='js/panel.js', v=runtime_assets_rev) }}"></script>
+    <script defer src="{{ url_for('static', filename='js/avatar.js', v=runtime_assets_rev) }}"></script>
+    {% endif %}
+    <style>
+        html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        header {
+            margin: 0 !important;
+            padding: 0;
+        }
+        body {
+            padding-top: 0 !important;
+        }
+        body > header.header-bg {
+            top: 0 !important;
+            margin-top: 0 !important;
+            transform: translateY(0) !important;
+        }
+        :root {
+            --site-bg-image: url("{{ url_for('static', filename=bg_light, v=assets_rev) }}");
+        }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body class="dark-theme">
+<div class="bg-photo"></div>
+<div class="bg-layer"></div>
+<header class="header-bg">
+    <div class="header-row header-grid">
+        <a href="/" class="brand-link">{{ title }}</a>
+        <div class="menu-nav-card">
+            <nav class="top-nav">
+                <a class="button-custom" href="/">Меню</a>
+                {% if not User %}
+                <a class="button-custom" href="/reg/new/">Регистрация</a>
+                <a class="button-custom" href="/login/new/">Вход</a>
+                {% endif %}
+            </nav>
+        </div>
+        <div class="header-actions">
+            {% if User %}
+            <div class="UserMenuListContainer">
+                <button class="button-custom user-btn" id="UserMenuButton" aria-haspopup="true" aria-expanded="false" aria-controls="UserMenuDropdown">
+                    {% if not User.icon %}
+                    <img class="def_ava" src="{{ url_for('static', filename='icons/default_icon.avif') }}" data-theme-icon="1" data-light="{{ url_for('static', filename='icons/default_icon.avif') }}" data-dark="{{ url_for('static', filename='icons/default_icon_dark.avif') }}" width="34" height="34" alt="Аватар">
+                    {% else %}
+                    <img class="def_ava" src="{{ url_for('static', filename='icons/' + user_id + '.avif') }}" width="34" height="34" alt="Аватар">
+                    {% endif %}
+                    <span>{{ User.name }}</span>
+                    {% if unread_notifications %}<span class="badge-pill">{{ unread_notifications }}</span>{% endif %}
+                </button>
+                <div class="UserMenuListDropdown" id="UserMenuDropdown" role="menu">
+                    <a href="/profile/" role="menuitem">Профиль</a>
+                    <a href="/orders/" role="menuitem">Заказы</a>
+                    <a href="/reports/" role="menuitem">Отчёты</a>
+                    <a href="/feedback/" role="menuitem">Обратная связь</a>
+                    <a href="/notifications/" role="menuitem">Уведомления {% if unread_notifications %}({{ unread_notifications }}){% endif %}</a>
+                    {% if User.role == 'chef' %}
+                    <a href="/kitchen/" role="menuitem">Кухня</a>
+                    {% endif %}
+                    {% if roles[User.role].level >= roles['admin'].level %}
+                    <a href="/create_dish/" role="menuitem">Добавить блюдо</a>
+                    <a href="/create_menu_group/" role="menuitem">Добавить группу меню</a>
+                    <a href="/settings/" role="menuitem">Настройки проекта</a>
+                    {% endif %}
+                    {% if User.role == 'super_admin' %}
+                    <a href="/admin_console/" role="menuitem">Онлайн консоль</a>
+                    {% endif %}
+                    <a href="/pay/" role="menuitem">Пополнение</a>
+                    <a role="menuitem">Роль: {{ role_label(User.role) }}</a>
+                    <a role="menuitem">Баланс: {{ User.balance }} ₽</a>
+                    <a href="/logout/" role="menuitem">Выход</a>
+                </div>
+            </div>
+            {% endif %}
+            <label class="theme-switch">
+                <input id="theme-toggle" type="checkbox">
+                <div class="slider">
+                    <div class="sky-glow"></div>
+                    <div class="sun-rays">
+                        <div class="ray ray-1"></div>
+                        <div class="ray ray-2"></div>
+                        <div class="ray ray-3"></div>
+                        <div class="ray ray-4"></div>
+                        <div class="ray ray-5"></div>
+                        <div class="ray ray-6"></div>
+                    </div>
+                    <div class="star star-1"></div>
+                    <div class="star star-2"></div>
+                    <div class="star star-3"></div>
+                    <div class="star star-4"></div>
+                    <div class="star star-5"></div>
+                    <div class="star star-6"></div>
+                    <div class="star star-7"></div>
+                    <div class="star star-8"></div>
+                    <div class="star star-9"></div>
+                    <div class="star star-10"></div>
+                    <div class="cloud cloud-base"></div>
+                    <div class="cloud cloud-mid"></div>
+                    <div class="cloud cloud-mini"></div>
+                    <div class="cloud cloud-micro"></div>
+                    <div class="orbit-ring orbit-ring-1"></div>
+                    <div class="orbit-ring orbit-ring-2"></div>
+                    <div class="event-layer">
+                        <div class="comet comet-1"></div>
+                        <div class="comet comet-2"></div>
+                        <div class="meteor meteor-1"></div>
+                        <div class="meteor meteor-2"></div>
+                    </div>
+                    <div class="circle-container">
+                        <div class="circle">
+                            <div class="crater crater-1"></div>
+                            <div class="crater crater-2"></div>
+                            <div class="crater crater-3"></div>
+                        </div>
+                    </div>
+                </div>
+            </label>
+        </div>
+    </div>
+</header>
+
+<main class="content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-wrap anim-fade-in anim-delay-1">
+        {% for category, text in messages %}
+        <div class="flash-item flash-{{ category }}">{{ text }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="anim-fade-in anim-delay-2">
+    <div class="footer_bg_color">
+        {% for s1, s2, s3 in footer %}
+        <div class="footer-row">
+            <div class="left glass-card">{% for i in s1 %}{{ i }}<br>{% endfor %}</div>
+            <div class="center glass-card">{% for i in s2 %}{{ i }}<br>{% endfor %}</div>
+            <div class="right glass-card">{% for i in s3 %}{{ i }}<br>{% endfor %}</div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="copyright">{{ year }} &middot; {{ title }}</div>
+</footer>
+{% block scripts %}{% endblock %}
+</body>
+</html>

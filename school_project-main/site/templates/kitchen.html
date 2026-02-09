@@ -1,0 +1,178 @@
+{% extends 'layout.html' %}
+{% block content %}
+<section class="kitchen-grid anim-fade-in anim-delay-2">
+    {% if can_manage_kitchen %}
+    <form class="panel form-block" method="POST" action="">
+        <h2>Остатки продуктов</h2>
+        <input type="hidden" name="action" value="save_inventory">
+        <div class="field"><label>Позиция</label><input class="input-styled" type="text" name="name" required></div>
+        <div class="field-grid">
+            <div class="field"><label>Количество</label><input class="input-styled" type="number" step="0.01" min="0" name="quantity" required></div>
+            <div class="field"><label>Минимум</label><input class="input-styled" type="number" step="0.01" min="0" name="min_quantity" required></div>
+            <div class="field"><label>Ед.</label><input class="input-styled" type="text" name="unit" value="кг" required></div>
+        </div>
+        <button class="button-custom" type="submit">Сохранить</button>
+    </form>
+
+    <form class="panel form-block" method="POST" action="">
+        <h2>Заявка на закупку</h2>
+        <input type="hidden" name="action" value="new_request">
+        <div class="field"><label>Позиция</label><input class="input-styled" type="text" name="item_name" required></div>
+        <div class="field-grid">
+            <div class="field"><label>Количество</label><input class="input-styled" type="number" step="0.01" min="0.01" name="quantity" required></div>
+            <div class="field"><label>Ед.</label><input class="input-styled" type="text" name="unit" value="кг" required></div>
+            <div class="field"><label>Ожидаемая стоимость</label><input class="input-styled" type="number" min="0" step="1" name="expected_cost" required></div>
+        </div>
+        <div class="field"><label>Комментарий</label><textarea class="input-styled" name="comment"></textarea></div>
+        <button class="button-custom" type="submit">Отправить заявку</button>
+    </form>
+
+    <form class="panel form-block" method="POST" action="">
+        <h2>Внештатная ситуация</h2>
+        <input type="hidden" name="action" value="report_incident">
+        <div class="field"><label>Тема</label><input class="input-styled" type="text" name="incident_title" required></div>
+        <div class="field"><label>Описание</label><textarea class="input-styled" name="incident_description" required></textarea></div>
+        <div class="field-grid">
+            <div class="field"><label>Тип</label>
+                <select class="input-styled" name="incident_kind">
+                    <option value="delay">Задержка поставки</option>
+                    <option value="spoilage">Порча / стухло</option>
+                    <option value="shortage">Нехватка продуктов</option>
+                    <option value="quality">Качество не соответствует</option>
+                    <option value="other">Другое</option>
+                </select>
+            </div>
+            <div class="field"><label>Уровень</label>
+                <select class="input-styled" name="incident_severity">
+                    <option value="low">Низкий</option>
+                    <option value="medium" selected>Средний</option>
+                    <option value="high">Высокий</option>
+                    <option value="critical">Критический</option>
+                </select>
+            </div>
+        </div>
+        <div class="field"><label>Ожидаемая дата решения</label><input class="input-styled" type="date" name="incident_expected"></div>
+        <button class="button-custom" type="submit">Зафиксировать</button>
+    </form>
+    {% endif %}
+</section>
+
+{% if can_manage_kitchen %}
+<section class="panel anim-fade-in anim-delay-3">
+    <h3>Текущие остатки</h3>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Позиция</th><th>Факт</th><th>Мин</th><th>Ед.</th></tr></thead>
+            <tbody>
+            {% for row in inventory %}
+            <tr class="{% if row.quantity <= row.min_quantity %}row-danger{% endif %}">
+                <td>{{ row.name }}</td>
+                <td>{{ '%.2f'|format(row.quantity) }}</td>
+                <td>{{ '%.2f'|format(row.min_quantity) }}</td>
+                <td>{{ row.unit }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4">Нет данных.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="panel anim-fade-in anim-delay-4">
+    <h3>Заказы на выдачу</h3>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Дата</th><th>Пользователь</th><th>Блюдо</th><th>Статус</th><th></th></tr></thead>
+            <tbody>
+            {% for order, u, dish in orders %}
+            <tr>
+                <td>{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                <td>{{ u.surname }} {{ u.name }}</td>
+                <td>{{ dish.title }}</td>
+                <td>{{ order.status }}</td>
+                <td>
+                    <form method="POST" action="">
+                        <input type="hidden" name="action" value="issue_order">
+                        <input type="hidden" name="order_id" value="{{ order.id }}">
+                        <button class="button-custom mini" type="submit">Отметить выдачу</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5">Нет активных заказов.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endif %}
+
+<section class="panel anim-fade-in anim-delay-5">
+    <h3>Заявки на закупку</h3>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>ID</th><th>Позиция</th><th>Кол-во</th><th>Стоимость</th><th>Статус</th><th></th></tr></thead>
+            <tbody>
+            {% for row in purchase_requests %}
+            <tr>
+                <td>{{ row.id }}</td>
+                <td>{{ row.item_name }}</td>
+                <td>{{ '%.2f'|format(row.quantity) }} {{ row.unit }}</td>
+                <td>{{ row.expected_cost }} ₽</td>
+                <td>{{ row.status }}</td>
+                <td>
+                    {% if can_approve and row.status == 'pending' %}
+                    <form class="inline-actions" method="POST" action="">
+                        <input type="hidden" name="action" value="decision">
+                        <input type="hidden" name="request_id" value="{{ row.id }}">
+                        <button class="button-custom mini" type="submit" name="decision" value="approved">Согласовать</button>
+                        <button class="button-custom mini danger" type="submit" name="decision" value="rejected">Отклонить</button>
+                    </form>
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6">Нет заявок.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="panel anim-fade-in anim-delay-6">
+    <h3>Внештатные ситуации</h3>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>ID</th><th>Тема</th><th>Тип</th><th>Уровень</th><th>Статус</th><th>Ожидаемая дата</th><th></th></tr></thead>
+            <tbody>
+            {% for row in incidents %}
+            <tr>
+                <td>{{ row.id }}</td>
+                <td>{{ row.title }}</td>
+                <td>{{ incident_kind_labels.get(row.kind, row.kind) }}</td>
+                <td>{{ incident_severity_labels.get(row.severity, row.severity) }}</td>
+                <td>{{ row.status }}</td>
+                <td>{{ row.expected_date.strftime('%d.%m.%Y') if row.expected_date else '-' }}</td>
+                <td>
+                    {% if can_approve and row.status == 'open' %}
+                    <form class="inline-actions" method="POST" action="">
+                        <input type="hidden" name="action" value="resolve_incident">
+                        <input type="hidden" name="incident_id" value="{{ row.id }}">
+                        <button class="button-custom mini" type="submit">Закрыть</button>
+                    </form>
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7">Инцидентов нет.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

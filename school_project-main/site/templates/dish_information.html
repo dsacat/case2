@@ -1,0 +1,101 @@
+{% extends 'layout.html' %}
+{% block content %}
+<section class="dish-page anim-fade-in anim-delay-2">
+    <article class="dish-detail-card">
+        <div class="dish-detail-media">
+            <img src="{{ url_for('static', filename=dish_image) }}" alt="{{ dish.title }}">
+        </div>
+        <div class="dish-detail-content">
+            <div class="dish-topline">
+                <span class="dish-category">{{ 'Завтрак' if dish.category == 'breakfast' else 'Обед' }}</span>
+                {% if dish.dish_group %}
+                <span class="dish-category">{{ dish.dish_group.title }}</span>
+                {% endif %}
+                <span class="dish-price">{{ dish.price }} ₽</span>
+            </div>
+            <h1>{{ dish.title }}</h1>
+            <p>{{ dish.description }}</p>
+            <p class="meta-title">Состав</p>
+            <p>{{ dish.composition }}</p>
+            <div class="dish-metrics">
+                <span>Масса: {{ dish.mass_grams|round(1) }} г</span>
+                <span>Ккал: {{ dish.calories|round(1) }}</span>
+                <span>Белки: {{ dish.proteins|round(1) }}</span>
+                <span>Жиры: {{ dish.fats|round(1) }}</span>
+                <span>Углеводы: {{ dish.carbohydrates|round(1) }}</span>
+            </div>
+            <div class="dish-rating">
+                <span>Средний рейтинг: {{ avg_rating }}</span>
+                <span>Отзывов: {{ rate_count }}</span>
+            </div>
+            {% if order_block_reason %}
+            <p class="hint-line">{{ order_block_reason }}</p>
+            {% if not User %}
+            <a class="button-custom" href="/login/new/">Войти</a>
+            {% endif %}
+            {% elif can_order %}
+            {% if order_low_balance %}
+            <p class="mes-line">Недостаточно средств: баланс {{ payer_balance }} ₽, цена блюда {{ dish.price }} ₽.</p>
+            <a class="button-custom" href="/pay/">Пополнить баланс</a>
+            {% else %}
+            <form class="order-inline" method="POST" action="/dish/{{ dish.id }}/order/">
+                {% if User and User.role == 'parent' %}
+                <select class="input-styled" name="child_id" required>
+                    <option value="">Выберите ребенка</option>
+                    {% for child in parent_children %}
+                    <option value="{{ child.id }}">{{ child.name }}{% if child.daily_limit %} · лимит {{ child.daily_limit }} ₽{% endif %}</option>
+                    {% endfor %}
+                </select>
+                {% endif %}
+                <input class="input-styled" type="date" name="meal_date">
+                <button class="button-custom" type="submit">Заказать</button>
+            </form>
+            {% endif %}
+            {% endif %}
+        </div>
+    </article>
+</section>
+
+<section class="panel anim-fade-in anim-delay-3">
+    <h3>Оставить отзыв</h3>
+    {% if User %}
+    <form method="POST" action="/dish/{{ dish.id }}/review/" class="review-form">
+        <div class="field-grid">
+            <div class="field">
+                <label>Оценка</label>
+                <select class="input-styled" name="rating">
+                    {% for i in range(1,6) %}
+                    <option value="{{ i }}" {% if user_review and user_review.rating == i %}selected{% endif %}>{{ i }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field grow">
+                <label>Комментарий</label>
+                <input class="input-styled" type="text" name="review_text" value="{{ user_review.text if user_review else '' }}">
+            </div>
+        </div>
+        <button class="button-custom" type="submit">Сохранить отзыв</button>
+    </form>
+    {% else %}
+    <p>Чтобы оставить отзыв, выполните вход.</p>
+    {% endif %}
+</section>
+
+<section class="panel dish-reviews anim-fade-in anim-delay-4">
+    <h3>Отзывы пользователей</h3>
+    <div class="review-list">
+        {% for review in reviews %}
+        <article class="review-item">
+            <div class="review-head">
+                <strong>{{ review.author }}</strong>
+                <span>{{ review.date }}</span>
+                <span>Оценка: {{ review.rating }}</span>
+            </div>
+            <p>{{ review.text }}</p>
+        </article>
+        {% else %}
+        <p>Пока отзывов нет.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

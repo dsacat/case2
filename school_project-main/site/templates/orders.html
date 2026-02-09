@@ -1,0 +1,71 @@
+{% extends 'layout.html' %}
+{% block content %}
+<section class="panel anim-fade-in anim-delay-2">
+    <div class="report-head">
+        <div>
+            <h1>{% if is_parent %}Заказы детей{% else %}Мои заказы{% endif %}</h1>
+            <p>Здесь видно что заказано и на какую дату.</p>
+        </div>
+    </div>
+
+    <form class="inline-actions" method="GET" action="/orders/">
+        <select class="input-styled" name="status">
+            {% for value, label in status_options %}
+            <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <select class="input-styled" name="period">
+            {% for value, label in period_options %}
+            <option value="{{ value }}" {% if period_filter == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <button class="button-custom" type="submit">Применить</button>
+        <a class="button-custom" href="/orders/">Сбросить</a>
+    </form>
+</section>
+
+<section class="panel anim-fade-in anim-delay-3">
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>Дата питания</th>
+                <th>Оформлен</th>
+                {% if is_parent %}<th>Ребенок</th>{% endif %}
+                {% if not is_parent %}<th>Оплатил</th>{% endif %}
+                <th>Блюдо</th>
+                <th>Статус</th>
+                <th>Цена</th>
+                <th>Действие</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for row in orders_view %}
+            <tr>
+                <td>{{ row.meal_date }}</td>
+                <td>{{ row.date }}</td>
+                {% if is_parent %}<td>{{ row.child }}</td>{% endif %}
+                {% if not is_parent %}<td>{{ row.payer }}</td>{% endif %}
+                <td>{{ row.dish }}</td>
+                <td>{{ row.status }}</td>
+                <td>{{ row.price }} ₽</td>
+                <td>
+                    {% if row.can_received %}
+                    <form method="POST" action="/order/{{ row.id }}/received/">
+                        <button class="button-custom mini" type="submit">Отметить получение</button>
+                    </form>
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8">Заказов по фильтру нет.</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

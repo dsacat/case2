@@ -1,0 +1,57 @@
+{% extends 'layout.html' %}
+{% block content %}
+<section class="form-shell anim-fade-in anim-delay-2">
+    <form class="form-card" method="POST" action="">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <h1>Регистрация</h1>
+        <div class="field">
+            <label>Email</label>
+            <input class="input-styled" type="email" name="email" required>
+        </div>
+        <div class="field-grid">
+            <div class="field">
+                <label>Пароль</label>
+                <input class="input-styled" type="password" name="password" required>
+            </div>
+            <div class="field">
+                <label>Повтор пароля</label>
+                <input class="input-styled" type="password" name="check_password" required>
+            </div>
+        </div>
+        <div class="field-grid">
+            <div class="field">
+                <label>Имя</label>
+                <input class="input-styled" type="text" name="user_name" required>
+            </div>
+            <div class="field">
+                <label>Фамилия</label>
+                <input class="input-styled" type="text" name="user_surname" required>
+            </div>
+        </div>
+        <div class="field">
+            <label>Отчество</label>
+            <input class="input-styled" type="text" name="user_patronymic">
+        </div>
+        <div class="field">
+            <label>Роль</label>
+            <select class="input-styled" name="role">
+                {% for role in roles_for_registration %}
+                <option value="{{ role }}">{{ role_label(role) }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <label class="checkbox-line">
+            <input type="checkbox" name="cbc" required>
+            <span>Согласен на обработку персональных данных</span>
+        </label>
+        <label class="checkbox-line">
+            <input type="checkbox" name="mail_notify_optin">
+            <span>Разрешаю получать уведомления на email</span>
+        </label>
+        <button class="button-custom" type="submit">Создать аккаунт</button>
+        <p class="hint-line">После регистрации аккаунт активируется ссылкой из письма.</p>
+        {% if mes %}<p class="mes-line">{{ mes }}</p>{% endif %}
+        <p class="hint-line">Уже есть аккаунт? <a href="/login/new/">Войти</a></p>
+    </form>
+</section>
+{% endblock %}

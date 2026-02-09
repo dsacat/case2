@@ -1,0 +1,99 @@
+.admin-grid {
+    align-items: stretch;
+}
+
+.admin-builder-panel {
+    display: grid;
+    gap: var(--space-3);
+}
+
+.admin-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    align-items: center;
+    justify-content: space-between;
+}
+
+.cmd-builder {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    justify-content: center;
+}
+
+.cmd-constructor {
+    display: grid;
+    gap: var(--space-2);
+    padding: var(--space-2);
+    border-radius: var(--radius-m);
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.65);
+}
+
+.cmd-args {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--space-2);
+}
+
+.cmd-preview-wrap {
+    width: 100%;
+}
+
+.cmd-preview {
+    padding: 10px 12px;
+    border-radius: var(--radius-s);
+    border: 1px solid var(--line);
+    background: rgba(16, 16, 16, 0.75);
+    color: #fff;
+    font-family: 'Consolas', 'Courier New', monospace;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+}
+
+.cmd-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    justify-content: flex-end;
+}
+
+.console-panel {
+    display: grid;
+    height: 100%;
+}
+
+.console-output {
+    min-height: 420px;
+    max-height: 680px;
+    overflow-y: auto;
+    display: grid;
+    gap: 8px;
+    padding: var(--space-2);
+    border-radius: var(--radius-m);
+    border: 1px solid var(--line);
+    background: rgba(20, 20, 20, 0.78);
+}
+
+.console-output .line-system {
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.console-output .line-user {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+@media (max-width: 900px) {
+    .cmd-actions {
+        justify-content: stretch;
+    }
+    .cmd-actions .button-custom {
+        flex: 1;
+        min-width: 0;
+    }
+    .console-output {
+        max-height: 520px;
+    }
+}

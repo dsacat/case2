@@ -1,0 +1,135 @@
+{% extends 'layout.html' %}
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+{% block content %}
+<section class="panel anim-fade-in anim-delay-2">
+    <div class="report-head">
+        <div>
+            <h1>{{ report.title }}</h1>
+            <p>{{ report.subtitle }}</p>
+        </div>
+        <div class="report-actions">
+            <a class="button-custom" href="/reports/export.zip">Скачать ZIP</a>
+        </div>
+    </div>
+    <div class="cards-grid">
+        {% for card in report.cards %}
+        <div class="stats-card">
+            <h4>{{ card.title }}</h4>
+            <strong>{{ card.value }}</strong>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="charts-grid anim-fade-in anim-delay-3">
+    {% for chart in report.charts %}
+    <div class="panel chart-panel">
+        <h3>{{ chart.title }}</h3>
+        <canvas id="chart_{{ loop.index0 }}"></canvas>
+    </div>
+    {% endfor %}
+</section>
+
+<section class="tables-grid anim-fade-in anim-delay-4">
+    {% for table in report.tables %}
+    <div class="panel">
+        <h3>{{ table.title }}</h3>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    {% for c in table['columns'] %}
+                    <th>{{ c }}</th>
+                    {% endfor %}
+                </tr>
+                </thead>
+                <tbody>
+                {% for row in table['rows'] %}
+                <tr>
+                    {% for key in table['keys'] %}
+                    <td>{{ row[key] }}</td>
+                    {% endfor %}
+                </tr>
+                {% else %}
+                <tr><td colspan="{{ table['columns']|length }}">Нет данных.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endfor %}
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+const charts = {{ charts_json | safe }};
+const chartInstances = [];
+const getThemeColors = () => {
+    const dark = document.body.classList.contains('dark-theme');
+    return {
+        labelColor: dark ? '#e8e8e8' : '#1f1f1f',
+        gridColor: dark ? 'rgba(220,220,220,0.22)' : 'rgba(40,40,40,0.18)',
+    };
+};
+
+const applyChartTheme = () => {
+    const colors = getThemeColors();
+    chartInstances.forEach((chart) => {
+        if (!chart) return;
+        if (chart.options.plugins && chart.options.plugins.legend && chart.options.plugins.legend.labels) {
+            chart.options.plugins.legend.labels.color = colors.labelColor;
+        }
+        if (chart.options.scales) {
+            ['x', 'y'].forEach((axis) => {
+                if (!chart.options.scales[axis]) return;
+                chart.options.scales[axis].ticks = chart.options.scales[axis].ticks || {};
+                chart.options.scales[axis].grid = chart.options.scales[axis].grid || {};
+                chart.options.scales[axis].ticks.color = colors.labelColor;
+                chart.options.scales[axis].grid.color = colors.gridColor;
+            });
+        }
+        chart.update('none');
+    });
+};
+
+charts.forEach((chart, idx) => {
+    const ctx = document.getElementById(`chart_${idx}`);
+    if (!ctx) return;
+    const colors = getThemeColors();
+    const instance = new Chart(ctx, {
+        type: chart.type,
+        data: {
+            labels: chart.labels,
+            datasets: chart.datasets,
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: { color: colors.labelColor },
+                },
+            },
+            scales: chart.type === 'pie' || chart.type === 'doughnut' ? {} : {
+                x: {
+                    ticks: { color: colors.labelColor },
+                    grid: { color: colors.gridColor },
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: colors.labelColor },
+                    grid: { color: colors.gridColor },
+                }
+            }
+        }
+    });
+    chartInstances.push(instance);
+});
+
+const observer = new MutationObserver(applyChartTheme);
+observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+</script>
+{% endblock %}

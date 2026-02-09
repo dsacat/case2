@@ -1,0 +1,49 @@
+{% extends 'layout.html' %}
+{% block content %}
+<section class="hero-panel anim-fade-in anim-delay-2">
+    <div>
+        <h1>{{ menu_group.title }}</h1>
+        {% if menu_group.description %}
+        <p>{{ menu_group.description }}</p>
+        {% else %}
+        <p>Отдельная страница группы меню.</p>
+        {% endif %}
+    </div>
+</section>
+
+<section class="panel menu-panel anim-fade-in anim-delay-3">
+    <div class="menu-group-page-head">
+        <a href="/" class="button-custom menu-group-back">← К группам меню</a>
+        <span class="menu-group-count">{{ menu_group.dishes|length }}</span>
+    </div>
+    <div class="dish-grid">
+        {% for dish in menu_group.dishes %}
+        <article class="dish-card anim-fade-in anim-delay-{{ (loop.index0 % 6) + 1 }}">
+            <a href="/dish/{{ dish.id }}/" class="dish-card-link">
+                <div class="dish-image-wrap">
+                    <img src="{{ url_for('static', filename=dish_image_path(dish)) }}" alt="{{ dish.title }}" loading="lazy">
+                </div>
+                <div class="dish-content">
+                    <div class="dish-topline">
+                        <span class="dish-category">{{ 'Завтрак' if dish.category == 'breakfast' else 'Обед' }}</span>
+                        <span class="dish-price">{{ dish.price }} ₽</span>
+                    </div>
+                    <h2>{{ dish.title }}</h2>
+                    <p>{{ dish.description }}</p>
+                    <div class="dish-metrics">
+                        <span>{{ dish.calories|int }} ккал</span>
+                        <span>Б {{ dish.proteins|round(1) }}</span>
+                        <span>Ж {{ dish.fats|round(1) }}</span>
+                        <span>У {{ dish.carbohydrates|round(1) }}</span>
+                    </div>
+                    <div class="dish-rating">
+                        <span>Рейтинг: {{ ratings.get(dish.id, {}).get('avg', 0) }}</span>
+                        <span>Отзывов: {{ ratings.get(dish.id, {}).get('count', 0) }}</span>
+                    </div>
+                </div>
+            </a>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
