@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Код подтверждения входа</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f4f4;font-family:Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f4;padding:30px 0;">
+    <tr>
+        <td align="center">
+            <table width="560" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.08);">
+                <tr>
+                    <td style="background:linear-gradient(90deg,#444444,#bbbbbb,#ffff00,#000000);padding:24px 32px;">
+                        <p style="margin:0;font-size:22px;font-weight:bold;color:#ffffff;text-shadow:1px 1px 2px rgba(0,0,0,0.5);">{{ site_name }}</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:32px;">
+                        <p style="margin:0 0 16px 0;font-size:16px;color:#333333;">Здравствуйте, {{ user_name }}!</p>
+                        <p style="margin:0 0 8px 0;font-size:16px;color:#333333;">Ваш код подтверждения входа:</p>
+                        <div style="font-size:36px;font-weight:bold;letter-spacing:8px;text-align:center;padding:20px;background:#f5f5f5;border-radius:10px;margin:16px 0;color:#222222;">{{ otp_code }}</div>
+                        <p style="margin:0 0 8px 0;font-size:14px;color:#555555;">Код действителен до <strong>{{ expires_str }}</strong></p>
+                        <p style="margin:0 0 24px 0;font-size:14px;color:#555555;">Запрос выполнен с IP-адреса: <strong>{{ ip_address }}</strong></p>
+                        <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#fff8e1;border-left:4px solid #f0ad4e;border-radius:4px;margin-bottom:16px;">
+                            <tr>
+                                <td style="padding:12px 16px;font-size:14px;color:#7a5500;">
+                                    Если вы не пытались войти, проигнорируйте это письмо. Возможно, кто-то пытается получить доступ к вашему аккаунту.
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="background-color:#f9f9f9;padding:16px 32px;border-top:1px solid #eeeeee;">
+                        <p style="margin:0;font-size:12px;color:#999999;text-align:center;">{{ site_name }}</p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

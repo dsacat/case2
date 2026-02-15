@@ -1,0 +1,40 @@
+{% extends 'layout.html' %}
+{% block content %}
+<section class="panel anim-fade-in anim-delay-2">
+    <h2>Обращение #{{ thread.id }}: {{ thread.subject }}</h2>
+    <p>Статус: <strong>{% if thread.status == 'open' %}Открыто{% elif thread.status == 'closed' %}Закрыто{% else %}{{ thread.status }}{% endif %}</strong></p>
+</section>
+
+<section class="panel anim-fade-in anim-delay-3">
+    <div class="thread-list">
+        {% for msg, author in messages %}
+        <article class="thread-item {% if msg.role in ['moder', 'admin', 'super_admin'] %}thread-item-staff{% endif %}">
+            <div class="thread-head">
+                <strong>{{ author.surname }} {{ author.name }}</strong>
+                <span>{{ role_label(msg.role) }}</span>
+                <span>{{ msg.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+            </div>
+            <p>{{ msg.body }}</p>
+        </article>
+        {% else %}
+        <p>Сообщений пока нет.</p>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="panel anim-fade-in anim-delay-4">
+    <form method="POST" action="" class="form-block">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <div class="field"><label>Ответ</label><textarea class="input-styled" name="body" maxlength="5000" required></textarea></div>
+        {% if is_moder %}
+        <div class="field"><label>Статус</label>
+            <select class="input-styled" name="status">
+                <option value="open" {% if thread.status == 'open' %}selected{% endif %}>Открыто</option>
+                <option value="closed" {% if thread.status == 'closed' %}selected{% endif %}>Закрыто</option>
+            </select>
+        </div>
+        {% endif %}
+        <button class="btn btn-primary" type="submit">Отправить</button>
+    </form>
+</section>
+{% endblock %}

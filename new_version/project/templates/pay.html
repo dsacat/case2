@@ -1,0 +1,58 @@
+{% extends 'layout.html' %}
+{% block content %}
+<section class="pay-grid anim-fade-in anim-delay-2">
+    <form class="panel form-block" method="POST" action="">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <h2>Пополнение баланса</h2>
+        <div class="field {% if field_errors.sum %}field-error{% endif %}">
+            <label>Сумма, ₽</label>
+            <input class="input-styled" type="number" min="1" step="1" name="sum" value="{{ form_data.sum | default('') }}" required>
+        </div>
+        <div class="field">
+            <label>Тип оплаты</label>
+            <select class="input-styled" name="payment_type" id="payment_type_select">
+                <option value="top_up" {% if form_data.payment_type == 'top_up' %}selected{% endif %}>Разовый платёж</option>
+                <option value="subscription" {% if form_data.payment_type == 'subscription' %}selected{% endif %}>Абонемент</option>
+            </select>
+        </div>
+        <div class="field" id="subscription_days_wrap">
+            <label>Срок абонемента, дней</label>
+            <input class="input-styled" type="number" min="1" max="365" step="1" name="subscription_days" value="{{ form_data.subscription_days | default('30') }}">
+        </div>
+        <button class="btn btn-primary" type="submit">Оплатить</button>
+        {% if mes %}<p class="mes-line">{{ mes }}</p>{% endif %}
+    </form>
+
+    <div class="panel">
+        <h3>История операций</h3>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr><th>Дата</th><th>Тип</th><th>Сумма</th><th>Описание</th></tr>
+                </thead>
+                <tbody>
+                {% for op in operations %}
+                <tr>
+                    <td>{{ op.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                    <td>{% if op.kind == 'top_up' %}Пополнение{% elif op.kind == 'subscription' %}Абонемент{% elif op.kind == 'dish_order' %}Заказ блюда{% elif op.kind == 'preorder' %}Предзаказ{% elif op.kind == 'order_cancel_refund' %}Возврат за отмену{% elif op.kind == 'purchase' %}Покупка{% elif op.kind == 'refund' %}Возврат{% else %}{{ op.kind }}{% endif %}</td>
+                    <td>{{ op.amount }} ₽</td>
+                    <td>{{ op.description }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4">Операций пока нет.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+const typeSelect = document.getElementById('payment_type_select');
+const daysWrap = document.getElementById('subscription_days_wrap');
+const updateView = () => daysWrap.style.display = typeSelect.value === 'subscription' ? 'block' : 'none';
+typeSelect.addEventListener('change', updateView);
+updateView();
+</script>
+{% endblock %}

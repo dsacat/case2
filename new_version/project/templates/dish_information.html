@@ -1,0 +1,178 @@
+{% extends 'layout.html' %}
+{% block content %}
+{% if allergen_warnings %}
+<div class="mes-line allergen-warning anim-fade-in anim-delay-1">
+    ⚠ Внимание: в составе блюда обнаружены аллергены из вашего профиля — <strong>{{ allergen_warnings | join(', ') }}</strong>.
+</div>
+{% endif %}
+<section class="dish-page anim-fade-in anim-delay-2">
+    <article class="dish-detail-card">
+        <div class="dish-detail-media">
+            <img src="{{ url_for('static', filename=dish_image) }}" alt="{{ dish.title }}">
+        </div>
+        <div class="dish-detail-content">
+            <div class="dish-topline">
+                <span class="dish-category">{{ 'Завтрак' if dish.category == 'breakfast' else 'Обед' }}</span>
+                {% if dish.dish_group %}
+                <span class="dish-category">{{ dish.dish_group.title }}</span>
+                {% endif %}
+                <span class="dish-price">{{ dish.price }} ₽</span>
+            </div>
+            <h1>{{ dish.title }}</h1>
+            <p>{{ dish.description }}</p>
+            <p class="meta-title">Состав</p>
+            <p>{{ dish.composition }}</p>
+            <div class="dish-metrics">
+                <span>Масса: {{ dish.mass_grams|round(1) }} г</span>
+                <span>Ккал: {{ dish.calories|round(1) }}</span>
+                <span>Белки: {{ dish.proteins|round(1) }}</span>
+                <span>Жиры: {{ dish.fats|round(1) }}</span>
+                <span>Углеводы: {{ dish.carbohydrates|round(1) }}</span>
+            </div>
+            {% if dish.allergens and dish.allergens.strip() %}
+            <div class="dish-allergens">
+                <span class="meta-title">Аллергены</span>
+                <div class="dish-allergen-list">
+                    {% for allergen in dish.allergens.split(',') %}
+                    {% if allergen.strip() %}
+                    <span class="dish-allergen-badge">{{ allergen.strip() }}</span>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            <div class="dish-rating">
+                <span class="dish-rating-score">★ {{ avg_rating }}</span>
+                <span>Отзывов: {{ rate_count }}</span>
+                {% if User %}
+                <button id="fav-btn" class="btn btn-primary btn-sm" data-dish="{{ dish.id }}" data-csrf="{{ csrf_token }}" data-active="{{ 'true' if is_favorite else 'false' }}">
+                    {{ '★ В избранном' if is_favorite else '☆ В избранное' }}
+                </button>
+                {% endif %}
+            </div>
+            {% if order_block_reason %}
+            <p class="hint-line">{{ order_block_reason }}</p>
+            {% if not User %}
+            <a class="btn btn-primary" href="/login/new/">Войти</a>
+            {% endif %}
+            {% elif can_order %}
+            {% if order_low_balance %}
+            <p class="mes-line">Недостаточно средств: баланс {{ payer_balance }} ₽, цена блюда {{ dish.price }} ₽.</p>
+            <a class="btn btn-primary" href="/pay/">Пополнить баланс</a>
+            {% else %}
+            <form class="order-inline" method="POST" action="/dish/{{ dish.id }}/order/">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                {% if User and User.role == 'parent' %}
+                <select class="input-styled" name="child_id" required>
+                    <option value="">Выберите ребенка</option>
+                    {% for child in parent_children %}
+                    <option value="{{ child.id }}">{{ child.name }}{% if child.daily_limit %} · лимит {{ child.daily_limit }} ₽{% endif %}</option>
+                    {% endfor %}
+                </select>
+                {% endif %}
+                <input class="input-styled" type="date" name="meal_date">
+                <button class="btn btn-primary" type="submit">Заказать</button>
+            </form>
+            <form class="order-inline" method="POST" action="/dish/{{ dish.id }}/preorder/">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                {% if User and User.role == 'parent' %}
+                <select class="input-styled" name="child_id">
+                    <option value="">Выберите ребенка</option>
+                    {% for child in parent_children %}
+                    <option value="{{ child.id }}">{{ child.name }}</option>
+                    {% endfor %}
+                </select>
+                {% endif %}
+                <button class="btn btn-secondary" type="submit">Предзаказ на завтра</button>
+            </form>
+            {% endif %}
+            {% endif %}
+        </div>
+    </article>
+    {% if can_edit_dish %}
+    <div class="dish-admin-bar">
+        <a class="btn btn-primary" href="/dish/{{ dish.id }}/edit/">Редактировать</a>
+        {% if dish.is_active %}
+        <form method="POST" action="/dish/{{ dish.id }}/delete/" class="form-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button class="btn btn-danger" type="submit">Скрыть блюдо</button>
+        </form>
+        {% else %}
+        <p class="mes-line">Блюдо скрыто из меню.</p>
+        <form method="POST" action="/dish/{{ dish.id }}/restore/" class="form-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button class="btn btn-primary" type="submit">Показать блюдо</button>
+        </form>
+        {% endif %}
+    </div>
+    {% endif %}
+</section>
+
+<section class="panel anim-fade-in anim-delay-3">
+    <h3>Оставить отзыв</h3>
+    {% if User %}
+    <form method="POST" action="/dish/{{ dish.id }}/review/" class="review-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <div class="field-grid">
+            <div class="field">
+                <label>Оценка</label>
+                <select class="input-styled" name="rating">
+                    {% for i in range(1,6) %}
+                    <option value="{{ i }}" {% if user_review and user_review.rating == i %}selected{% endif %}>{{ i }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field grow">
+                <label>Комментарий</label>
+                <input class="input-styled" type="text" name="review_text" maxlength="2000" value="{{ user_review.text if user_review else '' }}">
+            </div>
+        </div>
+        <button class="btn btn-primary" type="submit">Сохранить отзыв</button>
+    </form>
+    {% else %}
+    <p>Чтобы оставить отзыв, выполните вход.</p>
+    {% endif %}
+</section>
+
+<section class="panel dish-reviews anim-fade-in anim-delay-4">
+    <h3>Отзывы пользователей</h3>
+    <div class="review-list">
+        {% for review in reviews %}
+        <article class="review-item">
+            <div class="review-head">
+                <strong>{{ review.author }}</strong>
+                <span>{{ review.date }}</span>
+                <span class="review-rating-stars">{% for i in range(review.rating) %}★{% endfor %}{% for i in range(5 - review.rating) %}☆{% endfor %}</span>
+            </div>
+            <p>{{ review.text }}</p>
+        </article>
+        {% else %}
+        <p>Пока отзывов нет.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+    var btn = document.getElementById('fav-btn');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+        var dishId = btn.dataset.dish;
+        var csrf = btn.dataset.csrf;
+        fetch('/dish/' + dishId + '/favorite/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'csrf_token=' + encodeURIComponent(csrf)
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.status === 'ok') {
+                btn.dataset.active = data.added ? 'true' : 'false';
+                btn.textContent = data.added ? '★ В избранном' : '☆ В избранное';
+            }
+        });
+    });
+}());
+</script>
+{% endblock %}

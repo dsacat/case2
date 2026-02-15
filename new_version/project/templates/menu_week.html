@@ -1,0 +1,35 @@
+{% extends 'layout.html' %}
+{% block content %}
+<section class="panel anim-fade-in anim-delay-2">
+    <h2>Меню на неделю</h2>
+    <p class="muted-text">Расписание блюд по дням. Если день не заполнен — отображается всё меню столовой.</p>
+</section>
+
+<div class="menu-week-grid">
+    {% for day_idx in range(7) %}
+    <section class="panel menu-week-day{% if day_idx == today_dow %} menu-week-day--today{% endif %} anim-fade-in anim-delay-{{ (day_idx % 6) + 2 }}">
+        <div class="menu-week-day-header">
+            <h3>{{ day_names[day_idx] }}</h3>
+            {% if day_idx == today_dow %}
+            <span class="badge badge-primary">Сегодня</span>
+            {% endif %}
+        </div>
+        {% if by_day[day_idx] %}
+        <ul class="menu-week-dish-list">
+            {% for entry in by_day[day_idx] %}
+            <li class="menu-week-dish-item">
+                <a href="/dish/{{ entry.dish.id }}/" class="menu-week-dish-link">
+                    <span class="menu-week-dish-name">{{ entry.dish.title }}</span>
+                    <span class="menu-week-dish-price">{{ entry.dish.price }} ₽</span>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="muted-text menu-week-empty">Блюда не назначены</div>
+        {% endif %}
+    </section>
+    {% endfor %}
+</div>
+
+{% endblock %}

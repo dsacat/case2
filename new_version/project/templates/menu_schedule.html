@@ -1,0 +1,65 @@
+{% extends 'layout.html' %}
+{% block content %}
+<section class="panel anim-fade-in anim-delay-2">
+    <h2>Расписание меню по дням недели</h2>
+    <p class="muted-text">Назначьте блюда на каждый день. Если для дня нет записей — на главной отображается всё меню.</p>
+</section>
+
+<section class="panel anim-fade-in anim-delay-3">
+    <h3>Добавить блюдо в расписание</h3>
+    <form method="post" action="/menu/schedule/">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="action" value="add">
+        <div class="form-row">
+            <label class="form-label">День недели</label>
+            <select name="day_of_week" class="input-styled" required>
+                {% for name in day_names %}
+                <option value="{{ loop.index0 }}">{{ name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-row">
+            <label class="form-label">Блюдо</label>
+            <select name="dish_id" class="input-styled" required>
+                {% for dish in active_dishes %}
+                <option value="{{ dish.id }}">{{ dish.title }} — {{ dish.price }} ₽</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Добавить</button>
+    </form>
+</section>
+
+{% for day_idx in range(7) %}
+<section class="panel anim-fade-in anim-delay-{{ (day_idx % 6) + 2 }}">
+    <h3>{{ day_names[day_idx] }}</h3>
+    {% if by_day[day_idx] %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Блюдо</th><th>Цена</th><th>Действие</th></tr>
+            </thead>
+            <tbody>
+                {% for entry in by_day[day_idx] %}
+                <tr>
+                    <td><a href="/dish/{{ entry.dish.id }}/">{{ entry.dish.title }}</a></td>
+                    <td>{{ entry.dish.price }} ₽</td>
+                    <td>
+                        <form method="post" action="/menu/schedule/" class="form-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <input type="hidden" name="action" value="remove">
+                            <input type="hidden" name="entry_id" value="{{ entry.id }}">
+                            <button type="submit" class="btn btn-danger btn-sm">Удалить</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="muted-text">Блюда не назначены — будет показано всё меню.</div>
+    {% endif %}
+</section>
+{% endfor %}
+{% endblock %}

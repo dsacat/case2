@@ -1,0 +1,23 @@
+{% extends 'layout.html' %}
+{% block content %}
+<section class="form-shell anim-fade-in anim-delay-2">
+    <form class="form-card" method="POST" action="">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <h1>Пополнение баланса</h1>
+        <p class="current-balance">Текущий баланс: <strong>{{ User.balance }} ₽</strong></p>
+        <div class="field {% if field_errors.amount %}field-error{% endif %}">
+            <label>Сумма, ₽</label>
+            <input class="input-styled" type="number" min="1" max="{{ max_amount }}" step="1" name="amount" value="{{ form_data.amount | default('') }}" required>
+            <p class="hint-line">Максимум: {{ max_amount }} ₽</p>
+        </div>
+        <div class="field">
+            <label>Комментарий (необязательно)</label>
+            <input class="input-styled" type="text" maxlength="200" name="comment" value="{{ form_data.comment | default('') }}" placeholder="Например: на обед">
+        </div>
+        <button class="btn btn-primary" type="submit">Пополнить</button>
+        {% if mes %}
+        <p class="mes-line {% if mes_type == 'success' %}mes-success{% endif %}">{{ mes }}</p>
+        {% endif %}
+    </form>
+</section>
+{% endblock %}

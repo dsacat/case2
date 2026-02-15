@@ -1,0 +1,141 @@
+{% extends 'layout.html' %}
+{% block content %}
+<section class="settings-layout anim-fade-in anim-delay-2">
+    <form class="panel settings-panel" method="POST" action="">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <h1>Первичная настройка</h1>
+        {% if mes %}
+        <div class="flash-item flash-error">{{ mes }}</div>
+        {% endif %}
+
+        {% if not setup_unlocked %}
+        <p class="hint-line">Доступ к мастеру защищен кодом из консоли перед запуском сервера.</p>
+        {% if setup_hint %}
+        <p class="hint-line">Подсказка: {{ setup_hint }}</p>
+        {% endif %}
+        <div class="settings-sections">
+            <article class="settings-section">
+                <h3>Код доступа</h3>
+                <div class="field">
+                    <label>Введите код</label>
+                    <input class="input-styled" type="password" name="setup_code" minlength="8" required>
+                </div>
+            </article>
+        </div>
+        <button class="btn btn-primary" type="submit">Открыть мастер</button>
+        {% else %}
+        <p class="hint-line">Заполните параметры проекта. После сохранения будет создан супер-администратор.</p>
+        <div class="settings-sections">
+            <article class="settings-section">
+                <h3>Основное</h3>
+                <div class="field-grid">
+                    <div class="field {% if field_errors.site_name %}field-error{% endif %}">
+                        <label>Название сайта</label>
+                        <input class="input-styled" type="text" name="site_name" value="{{ form_data.site_name | default(settings_data.site_name) }}" required>
+                    </div>
+                    <div class="field {% if field_errors.school_name %}field-error{% endif %}">
+                        <label>Школа (родительный падеж)</label>
+                        <input class="input-styled" type="text" name="school_name" value="{{ form_data.school_name | default(settings_data.school_name) }}" required>
+                    </div>
+                </div>
+                <div class="field {% if field_errors.contacts_raw %}field-error{% endif %}">
+                    <label>Контакты footer</label>
+                    <textarea class="input-styled" name="contacts_raw" placeholder="Лево|Центр|Право&#10;Лево 2|Центр 2|Право 2">{{ form_data.contacts_raw | default(settings_data.contacts_raw) }}</textarea>
+                </div>
+            </article>
+
+            <article class="settings-section">
+                <h3>Сеть и защита</h3>
+                <div class="field-grid four">
+                    <div class="field">
+                        <label>Host</label>
+                        <input class="input-styled" type="text" name="host" value="{{ settings_data.host }}" required>
+                    </div>
+                    <div class="field">
+                        <label>Port</label>
+                        <input class="input-styled" type="number" min="1" max="65535" name="port" value="{{ settings_data.port }}" required>
+                    </div>
+                    <div class="field">
+                        <label>Protection</label>
+                        <input class="input-styled" type="number" min="24" max="512" name="protection" value="{{ settings_data.protection }}" required>
+                    </div>
+                    <div class="field field-checkbox-block">
+                        <label>Debug</label>
+                        <label class="checkbox-line"><input type="checkbox" name="debug" {% if settings_data.debug %}checked{% endif %}><span>Включено</span></label>
+                    </div>
+                </div>
+            </article>
+
+            <article class="settings-section">
+                <h3>Почта (SMTP)</h3>
+                <div class="field-grid four">
+                    <div class="field field-checkbox-block">
+                        <label>Включить отправку email</label>
+                        <label class="checkbox-line">
+                            <input type="checkbox" name="mail_enabled" {% if settings_data.mail_enabled %}checked{% endif %}>
+                            <span>Включено</span>
+                        </label>
+                    </div>
+                    <div class="field">
+                        <label>SMTP сервер</label>
+                        <input class="input-styled" type="text" name="mail_server" value="{{ settings_data.mail_server }}">
+                    </div>
+                    <div class="field">
+                        <label>SMTP порт</label>
+                        <input class="input-styled" type="number" min="1" max="65535" name="mail_port" value="{{ settings_data.mail_port }}">
+                    </div>
+                    <div class="field field-checkbox-block">
+                        <label>TLS</label>
+                        <label class="checkbox-line">
+                            <input type="checkbox" name="mail_use_tls" {% if settings_data.mail_use_tls %}checked{% endif %}>
+                            <span>Использовать TLS</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="field-grid">
+                    <div class="field">
+                        <label>Email отправителя (логин SMTP)</label>
+                        <input class="input-styled" type="email" name="mail_username" value="{{ settings_data.mail_username }}">
+                    </div>
+                    <div class="field">
+                        <label>SMTP пароль</label>
+                        <input class="input-styled" type="password" name="mail_password" placeholder="Введите пароль SMTP">
+                        {% if settings_data.mail_password_mask %}
+                        <p class="hint-line">Текущий пароль: {{ settings_data.mail_password_mask }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </article>
+
+            <article class="settings-section">
+                <h3>Супер-администратор</h3>
+                <div class="field-grid">
+                    <div class="field {% if field_errors.admin_email %}field-error{% endif %}">
+                        <label>Email</label>
+                        <input class="input-styled" type="email" name="admin_email" value="{{ form_data.admin_email | default(settings_data.admin_email) }}" required>
+                    </div>
+                    <div class="field {% if field_errors.admin_password %}field-error{% endif %}">
+                        <label>Пароль</label>
+                        <input class="input-styled" type="password" name="admin_password" minlength="6" required>
+                    </div>
+                </div>
+                <div class="field {% if field_errors.admin_password_confirm %}field-error{% endif %}">
+                    <label>Подтверждение пароля</label>
+                    <input class="input-styled" type="password" name="admin_password_confirm" minlength="6" required>
+                </div>
+            </article>
+
+            <article class="settings-section">
+                <h3>Визуальные ресурсы</h3>
+                <p class="hint-line">Иконка и фон настраиваются после мастера в разделе настроек проекта.</p>
+                <div class="field-inline">
+                    <label>Blur</label>
+                    <input class="input-styled" type="number" min="0" max="25" name="bg_blur" value="{{ settings_data.bg_blur }}">
+                </div>
+            </article>
+        </div>
+        <button class="btn btn-primary" type="submit">Завершить настройку</button>
+        {% endif %}
+    </form>
+</section>
+{% endblock %}

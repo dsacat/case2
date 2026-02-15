@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <title>{{ site_name }} — подтверждение регистрации</title>
+</head>
+<body style="margin:0;padding:24px;background:#f2f2f2;color:#1f1f1f;font-family:Calibri,'Segoe UI',sans-serif;">
+<table role="presentation" style="max-width:640px;width:100%;margin:0 auto;background:#ffffff;border-radius:14px;border:1px solid #d7d7d7;">
+    <tr>
+        <td style="padding:22px 24px 6px;">
+            <h2 style="margin:0 0 16px;font-size:20px;">{{ site_name }}</h2>
+            <p style="margin:0 0 14px;font-size:16px;">Здравствуйте, {{ user_name }}!</p>
+            <p style="margin:0 0 18px;font-size:15px;">Для активации аккаунта нажмите на кнопку ниже.</p>
+            <p style="margin:0 0 14px;">
+                <a href="{{ verification_url }}" style="display:inline-block;padding:12px 24px;border-radius:10px;background:#4f4f4f;color:#ffffff;text-decoration:none;font-size:15px;">Активировать аккаунт</a>
+            </p>
+            <p style="margin:0 0 18px;color:#626262;font-size:14px;">Ссылка действительна до {{ expires_at_formatted }}.</p>
+            <hr style="border:none;border-top:1px solid #e0e0e0;margin:18px 0;">
+            <p style="margin:0 0 10px;font-size:14px;color:#626262;">
+                Не хотите регистрироваться?
+                <a href="{{ cancel_url }}" style="color:#c0392b;text-decoration:underline;">Отменить регистрацию</a>
+            </p>
+            <p style="margin:0 0 18px;font-size:13px;color:#888888;">Если вы не регистрировались, проигнорируйте это письмо.</p>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

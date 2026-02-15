@@ -1,0 +1,57 @@
+{% extends 'layout.html' %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='admin.css', v=runtime_assets_rev) }}">
+<script defer src="{{ url_for('static', filename='js/admin.js', v=runtime_assets_rev) }}"></script>
+{% endblock %}
+{% block content %}
+<section class="admin-grid anim-fade-in anim-delay-2">
+    <div class="panel admin-builder-panel">
+        <div class="admin-head">
+            <h2>Онлайн консоль</h2>
+            <span class="hero-chip">{{ console_mode_label }}</span>
+        </div>
+        <div class="cmd-builder">
+            {% for item in command_templates %}
+            <button class="btn btn-primary cmd-template" data-command="{{ item.command }}">{{ item.title }}</button>
+            {% endfor %}
+        </div>
+        <div class="cmd-constructor">
+            <div class="field">
+                <label for="cmd-select">Команда</label>
+                <select id="cmd-select" class="input-styled">
+                    {% for command, spec in command_specs.items() %}
+                    <option value="{{ command }}">{{ spec.title }} ({{ command }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="cmd-args" id="cmd-args"></div>
+            <div class="field cmd-preview-wrap">
+                <span>Предпросмотр</span>
+                <div class="cmd-preview" id="cmd-preview">help</div>
+            </div>
+            <div class="cmd-actions">
+                <button class="btn btn-primary" id="cmd-apply" type="button">Вставить в строку</button>
+                <button class="btn btn-primary" id="cmd-run-preview" type="button">Выполнить</button>
+            </div>
+        </div>
+        <form class="cmd-form" method="POST" action="">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input class="input-styled" id="user-input" autocomplete="off" name="command" placeholder="Введите команду..." required>
+            <button class="btn btn-primary" id="send-btn" type="submit">Отправить</button>
+        </form>
+    </div>
+
+    <div class="panel console-panel">
+        <div class="console-output" id="console-output">
+            {% for line in log %}
+            {% if line.startswith('>>>') %}
+            <div class="line-user">{{ line }}</div>
+            {% else %}
+            <div class="line-system">{{ line }}</div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</section>
+<script id="console-command-specs" type="application/json">{{ command_specs | tojson }}</script>
+{% endblock %}

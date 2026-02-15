@@ -1,0 +1,13 @@
+{% extends 'layout.html' %}
+{% block content %}
+<section class="panel message-panel anim-fade-in anim-delay-2">
+    <h2>Сообщение</h2>
+    <p>{{ message }}</p>
+    <div class="top-actions">
+        {% if redirect_to %}
+        <a class="btn btn-primary" href="{{ redirect_to }}">Продолжить</a>
+        {% endif %}
+        <a class="btn btn-primary" href="/">На главную</a>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends 'layout.html' %}
+{% block title %}Выдача заказа #{{ order.id }}{% endblock %}
+{% block content %}
+<section class="panel scan-panel anim-fade-in anim-delay-2">
+    <h1>Выдача заказа #{{ order.id }}</h1>
+    <p><strong>Ученик:</strong> {{ student.surname }} {{ student.name }}</p>
+    <p><strong>Блюдо:</strong> {{ dish.title }}</p>
+    <p><strong>Сумма:</strong> {{ order.price }} ₽</p>
+    <p><strong>Статус:</strong> {% if order.status == 'ordered' %}Заказан{% elif order.status == 'issued' %}Выдан{% elif order.status == 'received' %}Получен{% elif order.status == 'cancelled' %}Отменён{% else %}{{ order.status }}{% endif %}</p>
+    {% if not issued %}
+    <form method="POST" action="/order/{{ order.id }}/scan/">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button type="submit" class="btn btn-primary">Подтвердить выдачу</button>
+    </form>
+    {% else %}
+    <div class="mes-success">Заказ выдан.</div>
+    {% endif %}
+    <p class="scan-links">
+        <a href="/kitchen/scan/">Вернуться к сканеру</a>
+        &nbsp;·&nbsp;
+        <a href="/kitchen/">Кухня</a>
+    </p>
+</section>
+{% endblock %}

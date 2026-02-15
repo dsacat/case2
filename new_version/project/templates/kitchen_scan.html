@@ -1,0 +1,63 @@
+{% extends 'layout.html' %}
+{% block title %}Сканер QR-кодов{% endblock %}
+{% block head %}
+<style>
+#scanner-video { width: 100%; max-width: 400px; display: block; margin: 0 auto; }
+#scanner-canvas { display: none; }
+#scan-status { text-align: center; margin-top: 0.5rem; }
+</style>
+{% endblock %}
+{% block content %}
+<section class="panel scan-center-panel anim-fade-in anim-delay-2">
+    <h1>Сканер QR-кодов</h1>
+    <video id="scanner-video" autoplay playsinline></video>
+    <canvas id="scanner-canvas"></canvas>
+    <p id="scan-status">Наведите камеру на QR-код заказа</p>
+    <p class="scan-links"><a href="/kitchen/">Кухня</a></p>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script>
+(function() {
+    var video = document.getElementById('scanner-video');
+    var canvas = document.getElementById('scanner-canvas');
+    var ctx = canvas.getContext('2d');
+    var statusEl = document.getElementById('scan-status');
+    var scanning = true;
+
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        .then(function(stream) {
+            video.srcObject = stream;
+            video.play();
+            requestAnimationFrame(tick);
+        })
+        .catch(function(err) {
+            statusEl.textContent = 'Нет доступа к камере: ' + err.message;
+        });
+
+    function tick() {
+        if (!scanning) return;
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            var code = jsQR(imageData.data, imageData.width, imageData.height);
+            if (code && code.data.indexOf('/scan/') !== -1) {
+                try {
+                    var parsed = new URL(code.data);
+                    if (parsed.origin === window.location.origin) {
+                        scanning = false;
+                        statusEl.textContent = 'QR распознан, переход...';
+                        window.location.href = parsed.pathname + parsed.search;
+                    }
+                } catch (e) {}
+                return;
+            }
+        }
+        requestAnimationFrame(tick);
+    }
+})();
+</script>
+{% endblock %}

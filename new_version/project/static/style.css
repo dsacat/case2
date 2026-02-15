@@ -1,0 +1,269 @@
+
+:root {
+    --site-bg-image: none;
+    --header-height: 68px;
+    --anim-ease-smooth: cubic-bezier(.22,.61,.36,1);
+    --anim-ease-soft: cubic-bezier(.2,.8,.2,1);
+    --anim-duration-long: 0.5s;
+    --anim-duration-mid: 0.4s;
+    --anim-duration-short: 0.35s;
+    --anim-duration-micro: 0.25s;
+    --anim-duration-hover: 0.3s;
+    --anim-duration-fade: 0.5s;
+    --anim-duration-ambient: 20s;
+    --anim-duration-shimmer: 8s;
+    --anim-duration-breathe: 8s;
+    --anim-duration-orbit: 25s;
+    --space-1: 8px;
+    --space-2: 12px;
+    --space-3: 16px;
+    --space-4: 20px;
+    --space-5: 24px;
+    --radius-s: 12px;
+    --radius-m: 16px;
+    --radius-l: 20px;
+    --radius-xl: 24px;
+    --content-max: 1300px;
+    --panel-max: 1180px;
+    --control-height: 46px;
+    --bg-1: rgba(216, 220, 228, 0.72);
+    --bg-2: rgba(243, 245, 249, 0.74);
+    --card: rgba(255, 255, 255, 0.76);
+    --card-strong: rgba(255, 255, 255, 0.86);
+    --line: rgba(49, 63, 82, 0.18);
+    --text: #202732;
+    --text-main: #202732;
+    --text-soft: rgba(32, 39, 50, 0.78);
+    --text-muted: rgba(32, 39, 50, 0.62);
+    --border: rgba(49, 63, 82, 0.24);
+    --bg-card: rgba(255, 255, 255, 0.9);
+    --accent: #5b6c82;
+    --accent-hover: #48576a;
+    --danger: #a84545;
+
+    --btn-primary-bg: rgba(79, 102, 130, 0.88);
+    --btn-primary-hover: rgba(67, 89, 116, 0.94);
+    --btn-primary-active: rgba(53, 72, 95, 0.98);
+    --btn-primary-shadow: rgba(33, 46, 63, 0.24);
+    --btn-primary-ring: rgba(91, 108, 130, 0.3);
+    --btn-primary-text: #f9fbff;
+
+    --btn-danger-bg: rgba(168, 72, 72, 0.86);
+    --btn-danger-hover: rgba(150, 53, 53, 0.94);
+    --btn-danger-active: rgba(122, 39, 39, 0.98);
+    --btn-danger-shadow: rgba(88, 23, 23, 0.24);
+    --btn-danger-ring: rgba(180, 83, 83, 0.3);
+    --btn-danger-text: #fff9f9;
+
+    --input-bg: rgba(255, 255, 255, 0.84);
+    --input-border: rgba(57, 69, 86, 0.28);
+    --input-focus: rgba(91, 108, 130, 0.74);
+    --input-ring: rgba(91, 108, 130, 0.28);
+    --file-btn-bg: rgba(78, 93, 115, 0.84);
+    --file-btn-border: rgba(53, 66, 83, 0.5);
+    --file-btn-hover: rgba(68, 83, 103, 0.9);
+
+    --chip-bg: rgba(255, 255, 255, 0.84);
+    --chip-text: rgba(35, 45, 58, 0.9);
+    --chip-border: rgba(57, 69, 86, 0.2);
+
+    --dropdown-bg: rgba(24, 30, 40, 0.9);
+    --dropdown-border: rgba(214, 224, 240, 0.2);
+    --dropdown-link: rgba(243, 247, 255, 0.96);
+    --dropdown-hover: rgba(121, 145, 175, 0.22);
+
+    --status-success: #2f8a57;
+    --status-error: #b54848;
+    --surface-alpha: 0.72;
+    --surface-alpha-dark: 0.82;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+}
+
+html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 100%;
+    height: 100%;
+    min-height: 100svh;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+}
+
+.bg-photo {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: scroll;
+    transition: opacity var(--anim-duration-fade) var(--anim-ease-smooth), filter var(--anim-duration-fade) var(--anim-ease-smooth), transform var(--anim-duration-fade) var(--anim-ease-smooth);
+    transform: scale(1.01);
+    animation: bgPhotoDrift calc(var(--anim-duration-orbit) * 1.35) ease-in-out infinite alternate;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    z-index: -4;
+    background-image: var(--site-bg-image);
+    opacity: 1;
+}
+
+.button-custom {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: var(--control-height);
+    padding: 0 18px;
+    border-radius: var(--radius-s);
+    border: 1px solid rgba(44, 44, 44, 0.34);
+    background: linear-gradient(140deg, rgba(92, 92, 92, 0.72), rgba(62, 62, 62, 0.72));
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform var(--anim-duration-hover) var(--anim-ease-smooth), box-shadow var(--anim-duration-hover) var(--anim-ease-smooth), filter var(--anim-duration-hover) var(--anim-ease-smooth), background-color var(--anim-duration-fade) var(--anim-ease-smooth), border-color var(--anim-duration-fade) var(--anim-ease-smooth), color var(--anim-duration-fade) var(--anim-ease-smooth), opacity var(--anim-duration-fade) var(--anim-ease-smooth);
+    box-shadow: 0 8px 22px rgba(44, 44, 44, 0.24);
+    position: relative;
+    overflow: hidden;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.button-custom:hover {
+    transform: translateY(-2px) scale(1.015);
+    box-shadow: 0 12px 26px rgba(44, 44, 44, 0.34);
+    filter: saturate(1);
+}
+
+.button-custom:active {
+    transform: translateY(1px) scale(0.98);
+    box-shadow: 0 3px 12px rgba(44, 44, 44, 0.28);
+}
+
+.button-custom::before {
+    content: "";
+    position: absolute;
+    inset: -180% auto -180% -120%;
+    width: 62%;
+    transform: rotate(20deg);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.32), transparent);
+    pointer-events: none;
+    animation: sheenSlide var(--anim-duration-shimmer) linear infinite;
+}
+
+.button-custom::after {
+    content: "";
+    position: absolute;
+    inset: auto auto -32% -10%;
+    width: 54%;
+    height: 170%;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.24), transparent 66%);
+    pointer-events: none;
+    opacity: .24;
+}
+
+.button-custom:hover::before {
+    animation-duration: 4.2s;
+}
+
+.button-custom.mini {
+    min-height: 38px;
+    padding: 0 12px;
+    font-size: .85rem;
+}
+
+.button-custom.danger {
+    background: linear-gradient(140deg, rgba(58, 58, 58, 0.72), rgba(35, 35, 35, 0.72));
+    box-shadow: 0 8px 20px rgba(22, 22, 22, 0.25);
+}
+
+.dish-allergens {
+    display: grid;
+    gap: 8px;
+    justify-items: center;
+}
+
+.dish-allergen-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+}
+
+.dish-allergen-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: rgba(180, 100, 40, 0.18);
+    border: 1px solid rgba(180, 100, 40, 0.38);
+    color: var(--text-soft);
+    font-size: .82rem;
+    font-weight: 500;
+}
+
+body.dark-theme .dish-allergen-badge {
+    background: rgba(220, 130, 60, 0.22);
+    border-color: rgba(220, 130, 60, 0.42);
+    color: rgba(255, 200, 140, 0.9);
+}
+
+.dish-rating-score {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.review-rating-stars {
+    font-size: 1.05rem;
+    letter-spacing: 2px;
+    color: var(--accent);
+}
+
+.flash-success {
+    border-left-color: #4a8a4a;
+}
+
+.flash-error {
+    border-left-color: #8a3a3a;
+}
+
+.flash-item.flash-success::before {
+    content: "✓";
+    font-weight: 700;
+    margin-right: 8px;
+    color: #4a8a4a;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.flash-item.flash-error::before {
+    content: "✕";
+    font-weight: 700;
+    margin-right: 8px;
+    color: #8a3a3a;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.flash-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

@@ -1,0 +1,73 @@
+{% extends 'layout.html' %}
+{% block content %}
+<section class="hero-panel anim-fade-in anim-delay-2">
+    <div>
+        <h1>{{ menu_group.title }}</h1>
+        {% if menu_group.description %}
+        <p>{{ menu_group.description }}</p>
+        {% else %}
+        <p>Отдельная страница группы меню.</p>
+        {% endif %}
+    </div>
+</section>
+
+{% if can_create_dish and group_db_id %}
+<section class="panel menu-group-admin anim-fade-in anim-delay-3">
+    <div class="menu-group-admin-row">
+        <form method="post" action="/menu-group/{{ group_db_id }}/edit/" class="menu-group-admin-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="text" name="title" value="{{ menu_group.title }}" maxlength="120" required class="input-styled menu-group-admin-input">
+            <button type="submit" class="btn btn-primary">Переименовать</button>
+        </form>
+        {% if menu_group.dishes|length == 0 %}
+        <form method="post" action="/menu-group/{{ group_db_id }}/delete/" onsubmit="return confirm('Удалить группу «{{ menu_group.title }}»?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button type="submit" class="btn btn-danger">Удалить группу</button>
+        </form>
+        {% else %}
+        <span class="menu-group-admin-note">Удаление недоступно: в группе {{ menu_group.dishes|length }} активных блюд</span>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
+
+<section class="panel menu-panel anim-fade-in anim-delay-3">
+    <div class="menu-group-page-head">
+        <a href="/" class="btn btn-primary menu-group-back">← К группам меню</a>
+        <span class="menu-group-count">{{ menu_group.dishes|length }}</span>
+    </div>
+    <div class="dish-grid">
+        {% for dish in menu_group.dishes %}
+        <article class="dish-card anim-fade-in anim-delay-{{ (loop.index0 % 6) + 1 }}">
+            <a href="/dish/{{ dish.id }}/" class="dish-card-link">
+                <div class="dish-image-wrap">
+                    <img src="{{ url_for('static', filename=dish_image_path(dish)) }}" alt="{{ dish.title }}" loading="lazy">
+                </div>
+                <div class="dish-content">
+                    <div class="dish-topline">
+                        <span class="dish-category">{{ 'Завтрак' if dish.category == 'breakfast' else 'Обед' }}</span>
+                        <span class="dish-price">{{ dish.price }} ₽</span>
+                    </div>
+                    <h2>{{ dish.title }}</h2>
+                    <p>{{ dish.description }}</p>
+                    <div class="dish-metrics">
+                        <span>{{ dish.calories|int }} ккал</span>
+                        <span>Б {{ dish.proteins|round(1) }}</span>
+                        <span>Ж {{ dish.fats|round(1) }}</span>
+                        <span>У {{ dish.carbohydrates|round(1) }}</span>
+                    </div>
+                    <div class="dish-rating">
+                        <span>Рейтинг: {{ ratings.get(dish.id, {}).get('avg', 0) }}</span>
+                        <span>Отзывов: {{ ratings.get(dish.id, {}).get('count', 0) }}</span>
+                    </div>
+                </div>
+            </a>
+        </article>
+        {% else %}
+        <div class="empty-state">
+            <p>В этой группе пока нет блюд.</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

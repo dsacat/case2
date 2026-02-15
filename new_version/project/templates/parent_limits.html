@@ -1,0 +1,86 @@
+{% extends 'layout.html' %}
+{% block content %}
+<section class="panel anim-fade-in anim-delay-2">
+    <h2>Ограничения для детей</h2>
+    <p class="muted-text">Управляйте списком заблокированных блюд и аллергенов для каждого ребёнка.</p>
+</section>
+
+{% if not children_data %}
+<section class="panel anim-fade-in anim-delay-3">
+    <p class="hint-line">Нет привязанных детей.</p>
+</section>
+{% endif %}
+
+{% for item in children_data %}
+<section class="panel anim-fade-in anim-delay-3">
+    <h3>{{ item.child_name }}</h3>
+
+    <h4>Заблокированные блюда</h4>
+    {% if item.blocked_dishes %}
+    <ul class="order-list parent-limits-list">
+        {% for dish in item.blocked_dishes %}
+        <li class="parent-limits-item">
+            <span>{{ dish.title }} <span class="muted-text">(ID {{ dish.id }})</span></span>
+            <form method="post" action="/parent/limits/remove/" class="parent-limits-remove-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="child_id" value="{{ item.child.id }}">
+                <input type="hidden" name="remove_type" value="dish">
+                <input type="hidden" name="remove_value" value="{{ dish.id }}">
+                <button type="submit" class="btn btn-danger btn-sm">Снять</button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="hint-line">Нет заблокированных блюд.</p>
+    {% endif %}
+
+    <form method="post" action="/parent/limits/" class="parent-limits-add-dish-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="action" value="add_dish">
+        <input type="hidden" name="child_id" value="{{ item.child.id }}">
+        <div class="form-row">
+            <label class="form-label">ID блюда для блокировки</label>
+            <input type="number" name="dish_id" min="1" class="input-styled" required placeholder="Введите ID блюда">
+            <p class="hint-line">ID блюда указан в адресной строке на странице блюда: /dish/<strong>ID</strong>/</p>
+        </div>
+        <button type="submit" class="btn btn-primary">Добавить блюдо</button>
+    </form>
+
+    <h4>Заблокированные аллергены</h4>
+    {% if item.blocked_allergens %}
+    <ul class="order-list parent-limits-list">
+        {% for allergen in item.blocked_allergens %}
+        <li class="parent-limits-item">
+            <span>{{ allergen }}</span>
+            <form method="post" action="/parent/limits/remove/" class="parent-limits-remove-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="child_id" value="{{ item.child.id }}">
+                <input type="hidden" name="remove_type" value="allergen">
+                <input type="hidden" name="remove_value" value="{{ allergen }}">
+                <button type="submit" class="btn btn-danger btn-sm">Снять</button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="hint-line">Нет заблокированных аллергенов.</p>
+    {% endif %}
+
+    <form method="post" action="/parent/limits/">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="action" value="add_allergen">
+        <input type="hidden" name="child_id" value="{{ item.child.id }}">
+        <div class="form-row">
+            <label class="form-label">Аллерген</label>
+            <select name="allergen" class="input-styled">
+                {% for a in known_allergens %}
+                <option value="{{ a }}">{{ a }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Добавить аллерген</button>
+    </form>
+</section>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends 'layout.html' %}
+{% block content %}
+<section class="hero-panel anim-fade-in anim-delay-2">
+    <div>
+        <h1>Панель статистики</h1>
+        <p>Финансовые показатели и активность пользователей.</p>
+    </div>
+    <div>
+        <a href="/admin/dashboard/export.csv" class="btn btn-primary">Экспорт CSV</a>
+    </div>
+</section>
+
+<section class="panel anim-fade-in anim-delay-3">
+    <h3>Выручка</h3>
+    <div class="stat-grid">
+        <div class="stat-card">
+            <div class="stat-label">Сегодня</div>
+            <div class="stat-value">{{ revenue_today }} ₽</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">За неделю</div>
+            <div class="stat-value">{{ revenue_week }} ₽</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">За месяц</div>
+            <div class="stat-value">{{ revenue_month }} ₽</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Активных пользователей (30 дн.)</div>
+            <div class="stat-value">{{ active_users_count }}</div>
+        </div>
+    </div>
+</section>
+
+<section class="panel anim-fade-in anim-delay-4">
+    <h3>Топ-10 блюд по заказам</h3>
+    <canvas id="topDishesChart" class="chart-canvas-lg"></canvas>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function() {
+    var raw = {{ charts_json | tojson }};
+    new Chart(document.getElementById('topDishesChart'), {
+        type: 'bar',
+        data: {
+            labels: raw.top_dishes.labels,
+            datasets: [{
+                label: 'Заказов',
+                data: raw.top_dishes.data,
+                backgroundColor: 'rgba(54, 162, 235, 0.6)'
+            }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } } }
+    });
+})();
+</script>
+{% endblock %}

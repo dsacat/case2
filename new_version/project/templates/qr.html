@@ -1,0 +1,43 @@
+{% extends 'layout.html' %}
+{% block title %}QR-код заказа{% endblock %}
+{% block head %}
+<style>
+@media print {
+    .nav, .footer, .qr-status-msg, .btn { display: none !important; }
+    .qr-img { width: 200px; height: 200px; }
+    body { background: #fff; }
+}
+</style>
+{% endblock %}
+{% block content %}
+<section class="panel qr-panel anim-fade-in anim-delay-2">
+    <h1>QR-код заказа #{{ order.id }}</h1>
+    <img id="qr-image" src="data:image/png;base64,{{ qr_b64 }}" alt="QR" class="qr-img">
+    <p class="qr-dish-title">{{ dish.title }}</p>
+    <p class="qr-dish-price">{{ order.price }} ₽</p>
+    <div id="qr-status-msg" class="qr-status-msg hidden"></div>
+    <a href="/orders/" class="btn btn-primary">Назад к заказам</a>
+</section>
+<script>
+(function() {
+    var orderId = {{ order.id }};
+    var statusMsg = document.getElementById('qr-status-msg');
+    var notified = false;
+    function poll() {
+        if (notified) return;
+        fetch('/order/' + orderId + '/status.json')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.status === 'issued') {
+                    notified = true;
+                    statusMsg.classList.remove('hidden');
+                    statusMsg.textContent = 'Ваш заказ выдан! Подойдите к стойке.';
+                }
+            })
+            .catch(function() {});
+    }
+    setInterval(poll, 3000);
+    poll();
+})();
+</script>
+{% endblock %}

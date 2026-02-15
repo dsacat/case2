@@ -1,0 +1,8 @@
+﻿Пакет сдачи проекта
+
+Содержимое:
+- README.md
+- INSTRUCTIONS.md
+- requirements.txt
+- Документация проекта.docx
+- project/ (очищенная копия проекта)

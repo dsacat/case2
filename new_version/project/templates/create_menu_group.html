@@ -1,0 +1,28 @@
+{% extends 'layout.html' %}
+{% block content %}
+<section class="form-shell anim-fade-in anim-delay-2">
+    <form class="form-card wide" method="POST" action="">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <h1>Добавление группы меню</h1>
+        <p class="hint-line">После сохранения откроется форма добавления блюда с выбранной группой.</p>
+        <div class="field {% if field_errors.title %}field-error{% endif %}">
+            <label>Название группы</label>
+            <input class="input-styled" name="title" maxlength="120" value="{{ form_data.title }}" required>
+        </div>
+        <div class="field {% if field_errors.description %}field-error{% endif %}">
+            <label>Описание (опционально)</label>
+            <textarea class="input-styled" name="description" maxlength="260">{{ form_data.description }}</textarea>
+        </div>
+        <div class="field {% if field_errors.sort_order %}field-error{% endif %}">
+            <label>Порядок сортировки (опционально)</label>
+            <input class="input-styled" type="number" min="0" step="1" name="sort_order"
+                   value="{{ form_data.sort_order }}" placeholder="Например, 30">
+        </div>
+        <div class="top-actions">
+            <button class="btn btn-primary" type="submit">Сохранить группу</button>
+            <a href="/" class="btn btn-primary">К меню</a>
+        </div>
+        {% if mes %}<p class="mes-line">{{ mes }}</p>{% endif %}
+    </form>
+</section>
+{% endblock %}

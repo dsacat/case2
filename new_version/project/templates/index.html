@@ -1,0 +1,193 @@
+{% extends 'layout.html' %}
+{% block content %}
+<section class="hero-panel anim-fade-in anim-delay-2">
+    <div>
+        <h1>Школьная столовая {{ Name_sch }}</h1>
+        <p>Цифровой сервис питания: меню, заказы, отчётность, закупки и обратная связь в одном интерфейсе.</p>
+    </div>
+    {% if User %}
+    <div class="hero-stats">
+        <div class="hero-chip">{{ role_label(User.role) }}</div>
+        <div class="hero-chip">Баланс: {{ User.balance }} ₽</div>
+        <div class="hero-chip">ID: {{ User.id }}</div>
+    </div>
+    {% endif %}
+</section>
+
+{% if can_create_dish %}
+<div class="top-actions anim-fade-in anim-delay-3">
+    <a href="/create_dish/" class="btn btn-primary">+ Добавить блюдо</a>
+    <a href="/create_menu_group/" class="btn btn-primary">+ Добавить группу</a>
+</div>
+{% endif %}
+
+<section class="panel menu-panel anim-fade-in anim-delay-4">
+    <div class="menu-search-row">
+        <div>
+            <h2>
+                {% if has_schedule %}
+                Меню на {{ current_day_name }}
+                {% else %}
+                Меню столовой
+                {% endif %}
+            </h2>
+            {% if has_schedule %}
+            <span class="muted-text menu-schedule-note">Отображаются блюда по расписанию на сегодня</span>
+            {% endif %}
+        </div>
+        <input id="menu-search" class="input-styled" type="search" placeholder="Поиск по блюдам..." autocomplete="off">
+    </div>
+    <div id="allergen-filter" class="allergen-filter-row">
+        <span class="allergen-filter-label">Исключить аллергены:</span>
+        {% set allergen_labels = [('глютен','Глютен'),('лактоза','Лактоза'),('орехи','Орехи'),('яйца','Яйца'),('рыба','Рыба'),('соя','Соя'),('кунжут','Кунжут')] %}
+        {% for key, label in allergen_labels %}
+        <label class="allergen-chip"><input type="checkbox" class="allergen-cb" value="{{ key }}"> {{ label }}</label>
+        {% endfor %}
+    </div>
+    {% if menu_groups %}
+    <div class="menu-groups">
+        {% for group in menu_groups %}
+        <section class="menu-group-card anim-fade-in anim-delay-{{ (loop.index0 % 6) + 1 }}">
+            <div class="menu-group-head">
+                <h3>
+                    {{ group.title }}
+                    {% if can_create_dish and group.kind == 'custom' %}
+                    {% set gid = group.key[6:] %}
+                    <span class="menu-group-move-controls">
+                        <form method="post" action="/menu-group/{{ gid }}/move/" class="menu-group-move-form">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <input type="hidden" name="direction" value="up">
+                            <button type="submit" class="btn btn-sm" title="Переместить вверх">&#8679;</button>
+                        </form>
+                        <form method="post" action="/menu-group/{{ gid }}/move/" class="menu-group-move-form">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <input type="hidden" name="direction" value="down">
+                            <button type="submit" class="btn btn-sm" title="Переместить вниз">&#8681;</button>
+                        </form>
+                    </span>
+                    {% endif %}
+                </h3>
+                <span class="menu-group-count">{{ group.dishes|length }}</span>
+            </div>
+            {% if group.description %}
+            <p class="menu-group-desc">{{ group.description }}</p>
+            {% endif %}
+            <div class="menu-group-preview">
+                {% for dish in group.dishes[:3] %}
+                <a href="/dish/{{ dish.id }}/" class="menu-group-preview-item" data-allergens="{{ dish_allergens[dish.id]|join(',') if dish_allergens is defined and dish.id in dish_allergens else '' }}">
+                    <span>{{ dish.title }}</span>
+                    <span>{{ dish.price }} ₽</span>
+                </a>
+                {% endfor %}
+                {% if group.dishes|length > 3 %}
+                <div class="menu-group-more">И ещё {{ group.dishes|length - 3 }} поз.</div>
+                {% endif %}
+            </div>
+            <a href="{{ url_for('menu.menu_group_page', group_key=group.key) }}" class="btn btn-primary menu-group-open">Открыть группу</a>
+        </section>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-card anim-fade-in anim-delay-2">Пока нет блюд. Добавьте первое блюдо через панель администратора.</div>
+    {% endif %}
+</section>
+
+{% if top_dishes %}
+<section class="panel anim-fade-in anim-delay-5">
+    <h3>Топ блюд по оценкам</h3>
+    <div class="top-dishes-list">
+        {% for row in top_dishes %}
+        <a href="/dish/{{ row.dish.id }}/" class="top-dish-item">
+            <span class="top-dish-rank">{{ loop.index }}</span>
+            <span class="top-dish-name">{{ row.dish.title }}</span>
+            <span class="top-dish-rating">★ {{ row.avg_rating }}</span>
+            <span class="top-dish-price">{{ row.dish.price }} ₽</span>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% if User and orders_preview %}
+<section class="panel anim-fade-in anim-delay-5">
+    <h3>Последние заказы</h3>
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>Блюдо</th>
+                <th>Статус</th>
+                <th>Цена</th>
+                <th>Время</th>
+                <th>Действие</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for row in orders_preview %}
+            <tr>
+                <td>{{ row.dish }}</td>
+                <td>{{ row.status }}</td>
+                <td>{{ row.price }} ₽</td>
+                <td>{{ row.created }}</td>
+                <td><a href="/dish/{{ row.dish_id }}/" class="btn btn-primary">Заказать снова</a></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+{% block scripts %}
+<script>
+var SAVED_ALLERGENS = {{ saved_allergens | tojson }};
+var CSRF_TOKEN = "{{ csrf_token }}";
+var IS_LOGGED_IN = {{ 'true' if User else 'false' }};
+</script>
+<script>
+(function () {
+    var input = document.getElementById('menu-search');
+    var allergenCbs = document.querySelectorAll('.allergen-cb');
+
+    function applyFilters() {
+        var q = input ? input.value.trim().toLowerCase() : '';
+        var blocked = [];
+        allergenCbs.forEach(function(cb) { if (cb.checked) blocked.push(cb.value); });
+        document.querySelectorAll('.menu-group-card').forEach(function (card) {
+            var items = card.querySelectorAll('.menu-group-preview-item');
+            var visible = 0;
+            items.forEach(function (item) {
+                var dishAllergens = (item.getAttribute('data-allergens') || '').split(',').filter(Boolean);
+                var hasBlocked = blocked.some(function(a) { return dishAllergens.indexOf(a) !== -1; });
+                var matchesText = !q || item.textContent.toLowerCase().includes(q);
+                var show = !hasBlocked && matchesText;
+                item.style.display = show ? '' : 'none';
+                if (show) visible++;
+            });
+            card.style.display = (!q && blocked.length === 0 || visible > 0) ? '' : 'none';
+        });
+    }
+
+    if (input) input.addEventListener('input', applyFilters);
+    allergenCbs.forEach(function(cb) { cb.addEventListener('change', applyFilters); });
+
+    if (IS_LOGGED_IN) {
+        allergenCbs.forEach(function(cb) {
+            if (SAVED_ALLERGENS.indexOf(cb.value) !== -1) cb.checked = true;
+        });
+        applyFilters();
+        allergenCbs.forEach(function(cb) {
+            cb.addEventListener('change', function() {
+                var active = [];
+                allergenCbs.forEach(function(c) { if (c.checked) active.push(c.value); });
+                fetch('/profile/allergens/', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN},
+                    body: JSON.stringify({allergens: active}),
+                });
+            });
+        });
+    }
+}());
+</script>
+{% endblock %}
